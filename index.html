@@ -55,11 +55,16 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
 .qr-header { padding: 20px; display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.8); position: absolute; top: 0; left: 0; right: 0; z-index: 10; }
 .qr-logo { font-family: var(--syne); font-size: 18px; font-weight: 800; color: #fff; }
 .qr-logo span { color: var(--accent); }
+.qr-mode-badge { font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 10px; border-radius: 100px; }
+.qr-mode-badge.in { background: rgba(16,255,138,0.15); color: var(--green); border: 1px solid var(--green); }
+.qr-mode-badge.out { background: rgba(255,69,101,0.15); color: var(--red); border: 1px solid var(--red); }
 .qr-cancel { font-family: var(--mono); font-size: 11px; color: var(--muted); background: none; border: 1px solid #333; padding: 6px 12px; border-radius: 6px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
 #qrVideo { width: 100%; height: 100vh; object-fit: cover; }
 .qr-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
 .qr-frame { width: 220px; height: 220px; border: 3px solid var(--accent); border-radius: 16px; box-shadow: 0 0 0 2000px rgba(0,0,0,0.5); position: relative; }
+.qr-frame.out-mode { border-color: var(--red); }
 .qr-scan-line { position: absolute; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, var(--green), transparent); animation: scanLine 2s infinite; top: 0; }
+.qr-frame.out-mode .qr-scan-line { background: linear-gradient(90deg, transparent, var(--red), transparent); }
 @keyframes scanLine { 0%{top:0} 100%{top:100%} }
 .qr-hint { font-family: var(--mono); font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 24px; letter-spacing: 1px; text-align: center; }
 .gps-status { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 10px; background: var(--surface2); border: 1px solid var(--border2); }
@@ -74,9 +79,13 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
 .site-confirm-box { background: var(--green-dim); border: 1px solid var(--green); border-radius: 12px; padding: 16px; text-align: center; }
 .site-confirm-label { font-family: var(--mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--green); }
 .site-confirm-name { font-size: 20px; font-weight: 800; color: var(--text); margin-top: 4px; }
+.token-box { background: var(--surface2); border: 1px solid var(--orange); border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; gap: 8px; }
+.token-box-text { font-family: var(--mono); font-size: 11px; color: var(--orange); letter-spacing: 0.5px; }
+.token-countdown { font-family: var(--mono); font-size: 14px; font-weight: 600; color: var(--orange); margin-left: auto; }
 .pin-dots { display: flex; justify-content: center; gap: 16px; margin: 4px 0; }
 .pin-dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--border2); background: transparent; transition: all 0.15s; }
 .pin-dot.filled { background: var(--accent); border-color: var(--accent); transform: scale(1.1); }
+.pin-dot.filled-green { background: var(--green); border-color: var(--green); transform: scale(1.1); }
 .pin-dot.error { background: var(--red); border-color: var(--red); animation: shake 0.3s ease; }
 @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
 .numpad { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
@@ -114,9 +123,10 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
 .hour-key { font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-top: 3px; }
 .clockout-wrap { padding: 16px 20px 0; }
 .btn-clockout { width: 100%; background: var(--surface2); color: var(--text); font-family: var(--syne); font-size: 18px; font-weight: 800; border: 2px solid var(--border2); padding: 20px; cursor: pointer; border-radius: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.15s; }
-.btn-clockout:not(:disabled):hover { border-color: var(--red); color: var(--red); }
+.btn-clockout:not(:disabled) { border-color: var(--red); color: var(--red); }
 .btn-clockout:disabled { opacity: 0.2; cursor: not-allowed; }
 .btn-clockout:active { transform: scale(0.97); }
+.clockout-hint { font-family: var(--mono); font-size: 10px; color: var(--muted); text-align: center; margin-top: 8px; letter-spacing: 0.5px; }
 .history-wrap { padding: 16px 20px 0; }
 .section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
 .shift-entry { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--border2); border-radius: 0 10px 10px 0; padding: 12px 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; gap: 10px; animation: fadeUp 0.2s ease; }
@@ -138,82 +148,142 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
 .toast.success { border-left: 3px solid var(--green); }
 .toast.warn { border-left: 3px solid var(--orange); }
 .toast.error { border-left: 3px solid var(--red); }
+.step-indicator { display: flex; align-items: center; justify-content: center; gap: 6px; }
+.step-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border2); }
+.step-dot.active { background: var(--accent); }
+.step-dot.done { background: var(--green); }
 .pin-error-msg { font-family: var(--mono); font-size: 11px; color: var(--red); text-align: center; display: none; letter-spacing: 0.5px; }
 </style>
 </head>
 <body>
-<script>
-const SUPABASE_URL = 'https://zxnsqorwixmaazuovwvg.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4bnNxb3J3aXhtYWF6dW92d3ZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxNjE5OTMsImV4cCI6MjA4NzczNzk5M30.pTt0WqKR-6i54gT-nhgv1wru7Y0KvfG1A1GdRkmCAEc';
-const db = {
-  async query(table, method = 'GET', body = null, filter = '') {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}${filter}`, {
-      method,
-      headers: {
-        'apikey': SUPABASE_ANON,
-        'Authorization': `Bearer ${SUPABASE_ANON}`,
-        'Content-Type': 'application/json',
-        'Prefer': method === 'POST' ? 'return=representation' : ''
-      },
-      body: body ? JSON.stringify(body) : null
-    });
-    if (!res.ok) throw new Error(await res.text());
-    return method === 'DELETE' ? null : res.json();
-  }
-};
-</script>
 <div class="screen" id="qrScreen">
   <div class="qr-header">
     <div class="qr-logo">Time<span>dit</span></div>
+    <div class="qr-mode-badge in" id="qrModeBadge">Clock In</div>
     <button class="qr-cancel" onclick="cancelScan()">Cancel</button>
   </div>
   <video id="qrVideo" playsinline autoplay muted></video>
   <canvas id="qrCanvas" style="display:none"></canvas>
   <div class="qr-overlay">
-    <div class="qr-frame"><div class="qr-scan-line"></div></div>
-    <div class="qr-hint">Point camera at site QR code</div>
+    <div class="qr-frame" id="qrFrame"><div class="qr-scan-line"></div></div>
+    <div class="qr-hint" id="qrHint">Point camera at site QR code</div>
   </div>
 </div>
 <div class="screen centered" id="gpsScreen">
   <div class="logo-wrap">
     <div class="logo">Time<span>dit</span></div>
-    <div class="logo-sub">Verifying Location</div>
+    <div class="logo-sub" id="gpsSubtitle">Verifying Location</div>
   </div>
   <div class="card">
-    <div class="card-title">Confirming Your Site</div>
+    <div class="card-title" id="gpsModeTitle">Confirming Your Site</div>
     <div class="gps-status">
       <div class="gps-dot checking" id="gpsDot"></div>
       <div class="gps-text" id="gpsText">Requesting location access...</div>
     </div>
     <div class="site-confirm-box" id="siteConfirmBox" style="display:none">
-      <div class="site-confirm-label">✓ You are at</div>
+      <div class="site-confirm-label" id="siteConfirmLabel">✓ You are at</div>
       <div class="site-confirm-name" id="siteConfirmName">—</div>
+    </div>
+    <div class="token-box" id="tokenBox" style="display:none">
+      <div class="token-box-text">⏱ Session expires in</div>
+      <div class="token-countdown" id="tokenCountdown">5:00</div>
     </div>
     <button class="btn-primary btn-green" id="gpsNextBtn" onclick="afterGpsConfirm()" disabled>Continue →</button>
   </div>
 </div>
-<div class="screen centered" id="setupScreen">
+<div class="screen centered" id="setupScreen1">
   <div class="logo-wrap">
     <div class="logo">Time<span>dit</span></div>
-    <div class="logo-sub">Employee Setup</div>
+    <div class="logo-sub">First Time Setup</div>
   </div>
   <div class="card">
-    <div class="card-title">First Time Setup</div>
-    <div class="card-sub">You only do this once.<br>Every clock-in after is just your PIN.</div>
+    <div class="step-indicator">
+      <div class="step-dot active"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+    </div>
+    <div class="card-title">Who are you?</div>
+    <div class="card-sub">Enter your full name and employee ID.<br>This is a one-time setup.</div>
+    <div class="field">
+      <label class="field-label">Full Name</label>
+      <input class="field-input" id="setupName" type="text" placeholder="Your full name..." autocomplete="name" />
+    </div>
     <div class="field">
       <label class="field-label">Employee ID Number</label>
       <input class="field-input" id="setupEmpId" type="tel" placeholder="Your employee ID..." inputmode="numeric" maxlength="20" />
     </div>
-    <div class="field">
-      <label class="field-label">Choose a 4-Digit PIN</label>
-      <input class="field-input" id="setupPin1" type="tel" placeholder="Choose 4 digits..." inputmode="numeric" maxlength="4" />
+    <button class="btn-primary btn-green" onclick="setupStep2()">Next →</button>
+  </div>
+</div>
+<div class="screen centered" id="setupScreen2">
+  <div class="logo-wrap">
+    <div class="logo">Time<span>dit</span></div>
+    <div class="logo-sub">Choose Your PIN</div>
+  </div>
+  <div class="card">
+    <div class="step-indicator">
+      <div class="step-dot done"></div>
+      <div class="step-dot active"></div>
+      <div class="step-dot"></div>
     </div>
-    <div class="field">
-      <label class="field-label">Confirm PIN</label>
-      <input class="field-input" id="setupPin2" type="tel" placeholder="Repeat your PIN..." inputmode="numeric" maxlength="4" />
+    <div class="card-title">Choose a 4-Digit PIN</div>
+    <div class="card-sub">You'll use this every time you clock in.<br>Keep it private.</div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="sp1_0"></div>
+      <div class="pin-dot" id="sp1_1"></div>
+      <div class="pin-dot" id="sp1_2"></div>
+      <div class="pin-dot" id="sp1_3"></div>
     </div>
-    <button class="btn-primary btn-green" onclick="completeSetup()">Create Account →</button>
-    <div class="note">Your PIN keeps your record separate from anyone with the same employee ID.</div>
+    <div class="numpad">
+      <button class="num-btn" onclick="setupNumTap('1')">1</button>
+      <button class="num-btn" onclick="setupNumTap('2')">2</button>
+      <button class="num-btn" onclick="setupNumTap('3')">3</button>
+      <button class="num-btn" onclick="setupNumTap('4')">4</button>
+      <button class="num-btn" onclick="setupNumTap('5')">5</button>
+      <button class="num-btn" onclick="setupNumTap('6')">6</button>
+      <button class="num-btn" onclick="setupNumTap('7')">7</button>
+      <button class="num-btn" onclick="setupNumTap('8')">8</button>
+      <button class="num-btn" onclick="setupNumTap('9')">9</button>
+      <button class="num-btn ghost" onclick="setupPinBack(1)">⌫</button>
+      <button class="num-btn" onclick="setupNumTap('0')">0</button>
+      <button class="num-btn ghost"></button>
+    </div>
+  </div>
+</div>
+<div class="screen centered" id="setupScreen3">
+  <div class="logo-wrap">
+    <div class="logo">Time<span>dit</span></div>
+    <div class="logo-sub">Confirm Your PIN</div>
+  </div>
+  <div class="card">
+    <div class="step-indicator">
+      <div class="step-dot done"></div>
+      <div class="step-dot done"></div>
+      <div class="step-dot active"></div>
+    </div>
+    <div class="card-title">Confirm Your PIN</div>
+    <div class="card-sub">Enter the same PIN again to confirm.</div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="sp2_0"></div>
+      <div class="pin-dot" id="sp2_1"></div>
+      <div class="pin-dot" id="sp2_2"></div>
+      <div class="pin-dot" id="sp2_3"></div>
+    </div>
+    <div class="numpad">
+      <button class="num-btn" onclick="setupConfirmTap('1')">1</button>
+      <button class="num-btn" onclick="setupConfirmTap('2')">2</button>
+      <button class="num-btn" onclick="setupConfirmTap('3')">3</button>
+      <button class="num-btn" onclick="setupConfirmTap('4')">4</button>
+      <button class="num-btn" onclick="setupConfirmTap('5')">5</button>
+      <button class="num-btn" onclick="setupConfirmTap('6')">6</button>
+      <button class="num-btn" onclick="setupConfirmTap('7')">7</button>
+      <button class="num-btn" onclick="setupConfirmTap('8')">8</button>
+      <button class="num-btn" onclick="setupConfirmTap('9')">9</button>
+      <button class="num-btn ghost" onclick="setupPinBack(2)">⌫</button>
+      <button class="num-btn" onclick="setupConfirmTap('0')">0</button>
+      <button class="num-btn ghost"></button>
+    </div>
+    <div class="pin-error-msg" id="pinMismatch">⚠ PINs don't match — try again</div>
   </div>
 </div>
 <div class="screen centered" id="pinScreen">
@@ -223,7 +293,7 @@ const db = {
   </div>
   <div class="card">
     <div class="card-title">Welcome Back</div>
-    <div class="card-sub" id="pinEmpIdDisplay">Employee ID: —</div>
+    <div class="card-sub" id="pinEmpIdDisplay">—</div>
     <div class="pin-dots">
       <div class="pin-dot" id="pd0"></div>
       <div class="pin-dot" id="pd1"></div>
@@ -242,10 +312,9 @@ const db = {
       <button class="num-btn" onclick="numTap('9')">9</button>
       <button class="num-btn ghost" onclick="pinBack()">⌫</button>
       <button class="num-btn" onclick="numTap('0')">0</button>
-      <button class="num-btn ghost" onclick="show('qrScreen');startScan()">⟳</button>
+      <button class="num-btn ghost"></button>
     </div>
     <div class="pin-error-msg" id="pinErr">⚠ Incorrect PIN — try again</div>
-    <div class="note">Not you? <span style="color:var(--accent);cursor:pointer" onclick="show('qrScreen');startScan()">Scan QR again →</span></div>
   </div>
 </div>
 <div class="screen centered" id="clockInScreen">
@@ -257,10 +326,25 @@ const db = {
     </div>
     <div style="text-align:center">
       <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)">Employee</div>
-      <div style="font-size:16px;font-weight:700;margin-top:4px" id="clockInEmpName">—</div>
+      <div style="font-size:18px;font-weight:800;margin-top:4px" id="clockInEmpName">—</div>
     </div>
     <button class="btn-primary btn-green" onclick="doClockIn()">▶ Clock In</button>
     <button class="btn-primary" style="background:var(--surface2);border:1px solid var(--border2)" onclick="show('mainScreen')">Go to Dashboard</button>
+  </div>
+</div>
+<div class="screen centered" id="clockOutScreen">
+  <div class="logo-wrap"><div class="logo">Time<span>dit</span></div></div>
+  <div class="card">
+    <div style="background:var(--red-dim);border:1px solid var(--red);border-radius:12px;padding:16px;text-align:center">
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--red)">📍 Site Confirmed</div>
+      <div style="font-size:20px;font-weight:800;color:var(--text);margin-top:4px" id="clockOutSiteName">—</div>
+    </div>
+    <div style="text-align:center">
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)">Shift Duration</div>
+      <div style="font-family:var(--mono);font-size:28px;font-weight:600;color:var(--text);margin-top:4px" id="clockOutDuration">—</div>
+    </div>
+    <button class="btn-primary" style="background:var(--red);color:#fff;box-shadow:0 4px 20px rgba(255,69,101,0.3)" onclick="doClockOut()">■ Clock Out</button>
+    <button class="btn-primary" style="background:var(--surface2);border:1px solid var(--border2)" onclick="show('mainScreen')">Cancel</button>
   </div>
 </div>
 <div class="screen" id="mainScreen">
@@ -268,7 +352,7 @@ const db = {
     <div class="nav-logo">Time<span>dit</span></div>
     <div class="nav-right">
       <div class="live-time" id="liveTime">--:--</div>
-      <button class="btn-scan" onclick="show('qrScreen');startScan()">⊡ Scan</button>
+      <button class="btn-scan" onclick="startClockInScan()">⊡ Scan</button>
     </div>
   </div>
   <div class="greeting">
@@ -297,7 +381,8 @@ const db = {
     <div class="hour-box"><div class="hour-val" id="hPeriod">0:00</div><div class="hour-key">Pay Period</div></div>
   </div>
   <div class="clockout-wrap">
-    <button class="btn-clockout" id="btnClockOut" onclick="doClockOut()" disabled>■ Clock Out</button>
+    <button class="btn-clockout" id="btnClockOut" onclick="startClockOutScan()" disabled>■ Clock Out</button>
+    <div class="clockout-hint" id="clockOutHint" style="display:none">Scan site QR code to clock out</div>
   </div>
   <div class="history-wrap">
     <div class="section-label">My Shifts</div>
@@ -310,40 +395,58 @@ const db = {
 </div>
 <div class="toast" id="toast"></div>
 <script>
-let currentGuard = JSON.parse(localStorage.getItem('td_guard') || 'null');
-let currentShift = JSON.parse(localStorage.getItem('td_shift') || 'null');
-let currentSite = null, userCoords = null, pinEntry = '', elapsedTimer = null, scanActive = false, videoStream = null;
-const pad = n => String(n).padStart(2, '0');
-function fmtTime(ts) { const d = new Date(ts); let h = d.getHours(), m = d.getMinutes(); const ap = h>=12?'PM':'AM'; h=h%12||12; return `${h}:${pad(m)} ${ap}`; }
-function fmtDur(ms, sec=false) { const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60); return sec?`${h}:${pad(m)}:${pad(s%60)}`:`${h}:${pad(m)}`; }
-function fmtDate(ts) { return new Date(ts).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}); }
-function distMeters(lat1,lng1,lat2,lng2) { const R=6371000,dLat=(lat2-lat1)*Math.PI/180,dLng=(lng2-lng1)*Math.PI/180,a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2; return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)); }
-function show(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-function loading(v,text='Loading...') { document.getElementById('loaderText').textContent=text; document.getElementById('loader').classList.toggle('show',v); }
-function toast(msg,type='success') { const t=document.getElementById('toast'); t.textContent=msg; t.className=`toast ${type}`; setTimeout(()=>t.classList.add('show'),10); setTimeout(()=>t.classList.remove('show'),3500); }
-async function startScan() { show('qrScreen'); scanActive=true; try { videoStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}); document.getElementById('qrVideo').srcObject=videoStream; requestAnimationFrame(scanFrame); } catch(e) { toast('⚠ Camera access denied','error'); show('mainScreen'); } }
-function scanFrame() { if(!scanActive)return; const video=document.getElementById('qrVideo'),canvas=document.getElementById('qrCanvas'); if(video.readyState===video.HAVE_ENOUGH_DATA) { canvas.width=video.videoWidth; canvas.height=video.videoHeight; const ctx=canvas.getContext('2d'); ctx.drawImage(video,0,0,canvas.width,canvas.height); const code=jsQR(ctx.getImageData(0,0,canvas.width,canvas.height).data,canvas.width,canvas.height); if(code){stopScan();handleQR(code.data);return;} } requestAnimationFrame(scanFrame); }
-function stopScan() { scanActive=false; if(videoStream){videoStream.getTracks().forEach(t=>t.stop());videoStream=null;} }
-function cancelScan() { stopScan(); show(currentGuard?'mainScreen':'setupScreen'); }
-async function handleQR(data) { loading(true,'Reading QR code...'); try { const siteId=data.includes('?site=')?new URL(data).searchParams.get('site'):data.trim(); const sites=await db.query('sites','GET',null,`?id=eq.${siteId}`); if(!sites||!sites.length)throw new Error('Site not found'); currentSite=sites[0]; loading(false); startGpsVerify(); } catch(e) { loading(false); toast('⚠ Invalid QR code','error'); show(currentGuard?'mainScreen':'setupScreen'); } }
-function startGpsVerify() { show('gpsScreen'); document.getElementById('siteConfirmBox').style.display='none'; document.getElementById('gpsNextBtn').disabled=true; document.getElementById('gpsDot').className='gps-dot checking'; document.getElementById('gpsText').textContent='Requesting location access...'; document.getElementById('gpsText').className='gps-text'; if(!navigator.geolocation){document.getElementById('gpsDot').className='gps-dot error';document.getElementById('gpsText').textContent='GPS not supported';return;} navigator.geolocation.getCurrentPosition(pos=>{userCoords={lat:pos.coords.latitude,lng:pos.coords.longitude};const dist=distMeters(userCoords.lat,userCoords.lng,currentSite.latitude,currentSite.longitude),radius=currentSite.geo_radius_meters||100;if(dist<=radius){document.getElementById('gpsDot').className='gps-dot ok';document.getElementById('gpsText').textContent=`✓ Location confirmed · ${Math.round(dist)}m from site`;document.getElementById('gpsText').className='gps-text ok';document.getElementById('siteConfirmName').textContent=currentSite.name;document.getElementById('siteConfirmBox').style.display='block';document.getElementById('gpsNextBtn').disabled=false;}else{document.getElementById('gpsDot').className='gps-dot error';document.getElementById('gpsText').textContent=`⚠ You are ${Math.round(dist)}m away from ${currentSite.name}`;document.getElementById('gpsText').className='gps-text error';}},err=>{document.getElementById('gpsDot').className='gps-dot error';document.getElementById('gpsText').textContent=err.code===1?'Location access denied — please allow location':'Could not get location';document.getElementById('gpsText').className='gps-text error';},{enableHighAccuracy:true,timeout:15000}); }
-function afterGpsConfirm() { if(currentGuard){document.getElementById('pinEmpIdDisplay').textContent=`Employee ID: ${currentGuard.employee_id}`;pinEntry='';updateDots();document.getElementById('pinErr').style.display='none';show('pinScreen');}else{show('setupScreen');} }
-async function completeSetup() { const empId=document.getElementById('setupEmpId').value.trim(),pin1=document.getElementById('setupPin1').value.trim(),pin2=document.getElementById('setupPin2').value.trim(); if(!empId){toast('⚠ Enter your employee ID','warn');return;} if(!/^\d{4}$/.test(pin1)){toast('⚠ PIN must be exactly 4 digits','warn');return;} if(pin1!==pin2){toast('⚠ PINs do not match','warn');return;} loading(true,'Creating your account...'); try { const existing=await db.query('guards','GET',null,`?employee_id=eq.${empId}`); let guard; if(existing&&existing.length){guard=existing[0];if(guard.pin!==pin1){loading(false);toast('⚠ Employee ID already registered','error');return;}}else{const result=await db.query('guards','POST',{employee_id:empId,pin:pin1,name:`Employee ${empId}`,company:'default'});guard=result[0];} currentGuard=guard;localStorage.setItem('td_guard',JSON.stringify(guard));loading(false);showClockInConfirm(); } catch(e){loading(false);toast('⚠ Could not create account','error');} }
+const SUPABASE_URL='https://zxnsqorwixmaazuovwvg.supabase.co';
+const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4bnNxb3J3aXhtYWF6dW92d3ZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxNjE5OTMsImV4cCI6MjA4NzczNzk5M30.pTt0WqKR-6i54gT-nhgv1wru7Y0KvfG1A1GdRkmCAEc';
+const TOKEN_DURATION=5*60*1000;
+const db={async query(table,method='GET',body=null,filter=''){const res=await fetch(`${SUPABASE_URL}/rest/v1/${table}${filter}`,{method,headers:{'apikey':SUPABASE_ANON,'Authorization':`Bearer ${SUPABASE_ANON}`,'Content-Type':'application/json','Prefer':method==='POST'?'return=representation':method==='PATCH'?'return=representation':''},body:body?JSON.stringify(body):null});if(!res.ok)throw new Error(await res.text());if(method==='DELETE')return null;const text=await res.text();return text?JSON.parse(text):null;}};
+let currentGuard=JSON.parse(localStorage.getItem('td_guard')||'null');
+let currentShift=JSON.parse(localStorage.getItem('td_shift')||'null');
+let currentSite=null,userCoords=null,pinEntry='',setupPin1='',setupPin2='',elapsedTimer=null,hoursTimer=null,scanActive=false,videoStream=null,scanMode='in',sessionToken=null,tokenTimer=null;
+const pad=n=>String(n).padStart(2,'0');
+function fmtTime(ts){const d=new Date(ts);let h=d.getHours(),m=d.getMinutes();const ap=h>=12?'PM':'AM';h=h%12||12;return `${h}:${pad(m)} ${ap}`;}
+function fmtDur(ms,sec=false){const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60);return sec?`${h}:${pad(m)}:${pad(s%60)}`:`${h}:${pad(m)}`;}
+function fmtDate(ts){return new Date(ts).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});}
+function distMeters(lat1,lng1,lat2,lng2){const R=6371000,dLat=(lat2-lat1)*Math.PI/180,dLng=(lng2-lng1)*Math.PI/180,a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function loading(v,text='Loading...'){document.getElementById('loaderText').textContent=text;document.getElementById('loader').classList.toggle('show',v);}
+function toast(msg,type='success'){const t=document.getElementById('toast');t.textContent=msg;t.className=`toast ${type}`;setTimeout(()=>t.classList.add('show'),10);setTimeout(()=>t.classList.remove('show'),3500);}
+function createToken(siteId,mode){sessionToken={token:Math.random().toString(36).substr(2)+Date.now(),expires:Date.now()+TOKEN_DURATION,siteId,mode};startTokenCountdown();}
+function isTokenValid(mode){if(!sessionToken)return false;if(sessionToken.mode!==mode)return false;if(Date.now()>sessionToken.expires){sessionToken=null;return false;}return true;}
+function consumeToken(){sessionToken=null;clearInterval(tokenTimer);}
+function startTokenCountdown(){clearInterval(tokenTimer);const box=document.getElementById('tokenBox'),cd=document.getElementById('tokenCountdown');if(box)box.style.display='flex';tokenTimer=setInterval(()=>{if(!sessionToken){clearInterval(tokenTimer);if(box)box.style.display='none';return;}const remaining=sessionToken.expires-Date.now();if(remaining<=0){clearInterval(tokenTimer);sessionToken=null;if(box)box.style.display='none';toast('⚠ Session expired — scan QR again','warn');show('mainScreen');return;}const m=Math.floor(remaining/60000),s=Math.floor((remaining%60000)/1000);if(cd)cd.textContent=`${m}:${pad(s)}`;},1000);}
+window.addEventListener('beforeunload',()=>{consumeToken();});
+function startClockInScan(){scanMode='in';startScan();}
+function startClockOutScan(){scanMode='out';startScan();}
+async function startScan(){const badge=document.getElementById('qrModeBadge'),frame=document.getElementById('qrFrame'),hint=document.getElementById('qrHint');badge.textContent=scanMode==='in'?'Clock In':'Clock Out';badge.className=`qr-mode-badge ${scanMode==='in'?'in':'out'}`;frame.className=`qr-frame${scanMode==='out'?' out-mode':''}`;hint.textContent=scanMode==='in'?'Scan site QR code to clock in':'Scan site QR code to clock out';show('qrScreen');scanActive=true;try{videoStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});document.getElementById('qrVideo').srcObject=videoStream;requestAnimationFrame(scanFrame);}catch(e){toast('⚠ Camera access denied','error');show('mainScreen');}}
+function scanFrame(){if(!scanActive)return;const video=document.getElementById('qrVideo'),canvas=document.getElementById('qrCanvas');if(video.readyState===video.HAVE_ENOUGH_DATA){canvas.width=video.videoWidth;canvas.height=video.videoHeight;const ctx=canvas.getContext('2d');ctx.drawImage(video,0,0,canvas.width,canvas.height);const code=jsQR(ctx.getImageData(0,0,canvas.width,canvas.height).data,canvas.width,canvas.height);if(code){stopScan();handleQR(code.data);return;}}requestAnimationFrame(scanFrame);}
+function stopScan(){scanActive=false;if(videoStream){videoStream.getTracks().forEach(t=>t.stop());videoStream=null;}}
+function cancelScan(){stopScan();show(currentGuard?'mainScreen':'mainScreen');}
+async function handleQR(data){loading(true,'Reading QR code...');try{const siteId=data.includes('?site=')?new URL(data).searchParams.get('site'):data.trim();const sites=await db.query('sites','GET',null,`?id=eq.${siteId}`);if(!sites||!sites.length)throw new Error('Site not found');currentSite=sites[0];createToken(siteId,scanMode);loading(false);startGpsVerify();}catch(e){loading(false);toast('⚠ Invalid QR code','error');show(currentGuard?'mainScreen':'mainScreen');}}
+function startGpsVerify(){show('gpsScreen');const isOut=scanMode==='out';document.getElementById('gpsSubtitle').textContent=isOut?'Confirming Location':'Verifying Location';document.getElementById('gpsModeTitle').textContent=isOut?'Confirm Clock Out':'Confirming Your Site';document.getElementById('siteConfirmBox').style.display='none';document.getElementById('gpsNextBtn').disabled=true;document.getElementById('gpsDot').className='gps-dot checking';document.getElementById('gpsText').textContent='Requesting location access...';document.getElementById('gpsText').className='gps-text';document.getElementById('gpsNextBtn').textContent=isOut?'Clock Out →':'Continue →';document.getElementById('gpsNextBtn').className=isOut?'btn-primary':'btn-primary btn-green';if(isOut)document.getElementById('gpsNextBtn').style.background='var(--red)';if(!navigator.geolocation){document.getElementById('gpsDot').className='gps-dot error';document.getElementById('gpsText').textContent='GPS not supported on this device';return;}navigator.geolocation.getCurrentPosition(pos=>{userCoords={lat:pos.coords.latitude,lng:pos.coords.longitude};const dist=distMeters(userCoords.lat,userCoords.lng,currentSite.latitude,currentSite.longitude),radius=currentSite.geo_radius_meters||100;if(dist<=radius){document.getElementById('gpsDot').className='gps-dot ok';document.getElementById('gpsText').textContent=`✓ Location confirmed · ${Math.round(dist)}m from site`;document.getElementById('gpsText').className='gps-text ok';document.getElementById('siteConfirmLabel')&&(document.getElementById('siteConfirmLabel').textContent=isOut?'✓ Clocking out from':'✓ You are at');document.getElementById('siteConfirmName').textContent=currentSite.name;document.getElementById('siteConfirmBox').style.display='block';document.getElementById('gpsNextBtn').disabled=false;}else{document.getElementById('gpsDot').className='gps-dot error';document.getElementById('gpsText').textContent=`⚠ You are ${Math.round(dist)}m away from ${currentSite.name}`;document.getElementById('gpsText').className='gps-text error';}},err=>{document.getElementById('gpsDot').className='gps-dot error';document.getElementById('gpsText').textContent=err.code===1?'Location access denied — please allow location':'Could not get location';document.getElementById('gpsText').className='gps-text error';},{enableHighAccuracy:true,timeout:15000});}
+function afterGpsConfirm(){if(scanMode==='out'){if(!isTokenValid('out')){toast('⚠ Session expired — scan QR again','warn');show('mainScreen');return;}showClockOutConfirm();}else{if(!isTokenValid('in')){toast('⚠ Session expired — scan QR again','warn');show('mainScreen');return;}if(currentGuard){document.getElementById('pinEmpIdDisplay').textContent=`${currentGuard.name||'Employee'} · ID ${currentGuard.employee_id}`;pinEntry='';updateDots();document.getElementById('pinErr').style.display='none';show('pinScreen');}else{show('setupScreen1');}}}
+function setupStep2(){const name=document.getElementById('setupName').value.trim(),empId=document.getElementById('setupEmpId').value.trim();if(!name){toast('⚠ Enter your full name','warn');return;}if(!empId){toast('⚠ Enter your employee ID','warn');return;}setupPin1='';setupPin2='';updateSetupDots1();show('setupScreen2');}
+function setupNumTap(n){if(setupPin1.length>=4)return;setupPin1+=n;updateSetupDots1();if(setupPin1.length===4)setTimeout(()=>show('setupScreen3'),200);}
+function setupPinBack(step){if(step===1){setupPin1=setupPin1.slice(0,-1);updateSetupDots1();}else{setupPin2=setupPin2.slice(0,-1);updateSetupDots2();}}
+function updateSetupDots1(){for(let i=0;i<4;i++)document.getElementById(`sp1_${i}`).className='pin-dot'+(i<setupPin1.length?' filled':'');}
+function updateSetupDots2(){for(let i=0;i<4;i++)document.getElementById(`sp2_${i}`).className='pin-dot'+(i<setupPin2.length?' filled-green':'');}
+async function setupConfirmTap(n){if(setupPin2.length>=4)return;setupPin2+=n;updateSetupDots2();if(setupPin2.length===4){if(setupPin2!==setupPin1){document.getElementById('pinMismatch').style.display='block';for(let i=0;i<4;i++)document.getElementById(`sp2_${i}`).className='pin-dot error';setTimeout(()=>{setupPin2='';updateSetupDots2();document.getElementById('pinMismatch').style.display='none';},900);return;}await completeSetup();}}
+async function completeSetup(){const name=document.getElementById('setupName').value.trim(),empId=document.getElementById('setupEmpId').value.trim();if(!isTokenValid('in')){toast('⚠ Session expired — scan QR again','warn');show('mainScreen');return;}loading(true,'Creating your account...');try{const existing=await db.query('guards','GET',null,`?employee_id=eq.${empId}`);let guard;if(existing&&existing.length){guard=existing[0];if(guard.pin!==setupPin1){loading(false);toast('⚠ Employee ID already taken','error');return;}}else{const result=await db.query('guards','POST',{employee_id:empId,pin:setupPin1,name:name,company:'default'});guard=result[0];}currentGuard=guard;localStorage.setItem('td_guard',JSON.stringify(guard));loading(false);showClockInConfirm();}catch(e){loading(false);toast('⚠ Could not create account. Try again.','error');}}
 function numTap(n){if(pinEntry.length>=4)return;pinEntry+=n;updateDots();if(pinEntry.length===4)setTimeout(checkPin,150);}
 function pinBack(){pinEntry=pinEntry.slice(0,-1);updateDots();}
 function updateDots(){for(let i=0;i<4;i++){const d=document.getElementById('pd'+i);d.className='pin-dot'+(i<pinEntry.length?' filled':'');}}
-async function checkPin(){if(pinEntry!==currentGuard.pin){for(let i=0;i<4;i++)document.getElementById('pd'+i).className='pin-dot error';document.getElementById('pinErr').style.display='block';setTimeout(()=>{pinEntry='';updateDots();},900);return;}document.getElementById('pinErr').style.display='none';showClockInConfirm();}
+async function checkPin(){if(!isTokenValid('in')){toast('⚠ Session expired — scan QR again','warn');show('mainScreen');return;}if(pinEntry!==currentGuard.pin){for(let i=0;i<4;i++)document.getElementById('pd'+i).className='pin-dot error';document.getElementById('pinErr').style.display='block';setTimeout(()=>{pinEntry='';updateDots();},900);return;}document.getElementById('pinErr').style.display='none';showClockInConfirm();}
 function showClockInConfirm(){document.getElementById('clockInSiteName').textContent=currentSite.name;document.getElementById('clockInEmpName').textContent=currentGuard.name||`Employee ${currentGuard.employee_id}`;if(currentShift){show('mainScreen');updateDashboard();return;}show('clockInScreen');}
-async function doClockIn(){if(!currentSite||!currentGuard)return;loading(true,'Clocking in...');try{const result=await db.query('shifts','POST',{guard_id:currentGuard.id,guard_name:currentGuard.name||`Employee ${currentGuard.employee_id}`,site_name:currentSite.name,site_number:currentSite.site_number||'',clock_in:new Date().toISOString(),company:currentGuard.company||'default',clock_in_lat:userCoords?userCoords.lat:null,clock_in_lng:userCoords?userCoords.lng:null});currentShift=result[0];localStorage.setItem('td_shift',JSON.stringify(currentShift));loading(false);show('mainScreen');updateDashboard();toast(`✓ Clocked in · ${currentSite.name}`,'success');}catch(e){loading(false);toast('⚠ Could not clock in','error');}}
-async function doClockOut(){if(!currentShift)return;loading(true,'Clocking out...');try{const now=new Date().toISOString(),dur=Math.round((Date.now()-new Date(currentShift.clock_in).getTime())/60000);await db.query('shifts','PATCH',{clock_out:now,duration_minutes:dur},`?id=eq.${currentShift.id}`);toast(`✓ Clocked out · ${fmtDur(dur*60000)} logged`,'success');currentShift=null;localStorage.removeItem('td_shift');clearInterval(elapsedTimer);updateDashboard();loading(false);}catch(e){loading(false);toast('⚠ Could not clock out','error');}}
-async function updateDashboard(){if(!currentGuard)return;document.getElementById('greetName').textContent=currentGuard.name||`Employee ${currentGuard.employee_id}`;document.getElementById('greetId').textContent=`ID: ${currentGuard.employee_id}`;const card=document.getElementById('statusCard');clearInterval(elapsedTimer);if(currentShift){card.classList.add('on');document.getElementById('sText').textContent='On Duty';document.getElementById('sSite').textContent=currentShift.site_name;document.getElementById('btnClockOut').disabled=false;const tick=()=>{const ms=Date.now()-new Date(currentShift.clock_in).getTime();document.getElementById('sElapsed').textContent=fmtDur(ms,true);};tick();elapsedTimer=setInterval(tick,1000);}else{card.classList.remove('on');document.getElementById('sText').textContent='Off Duty';document.getElementById('sSite').textContent='';document.getElementById('sElapsed').textContent='0:00:00';document.getElementById('btnClockOut').disabled=true;}try{const shifts=await db.query('shifts','GET',null,`?guard_id=eq.${currentGuard.id}&order=clock_in.desc&limit=20`);calcHours(shifts);renderShifts(shifts);}catch(e){console.log('Could not load shifts',e);}}
+async function doClockIn(){if(!currentSite||!currentGuard)return;if(!isTokenValid('in')){toast('⚠ Session expired — scan QR again','warn');show('mainScreen');return;}loading(true,'Clocking in...');try{const result=await db.query('shifts','POST',{guard_id:currentGuard.id,guard_name:currentGuard.name||`Employee ${currentGuard.employee_id}`,site_name:currentSite.name,site_number:currentSite.site_number||'',clock_in:new Date().toISOString(),company:currentGuard.company||'default',clock_in_lat:userCoords?.lat||null,clock_in_lng:userCoords?.lng||null});currentShift=result[0];localStorage.setItem('td_shift',JSON.stringify(currentShift));consumeToken();loading(false);show('mainScreen');updateDashboard();toast(`✓ Clocked in · ${currentSite.name}`,'success');}catch(e){loading(false);toast('⚠ Could not clock in. Try again.','error');}}
+function showClockOutConfirm(){if(!currentShift){toast('⚠ You are not clocked in','warn');show('mainScreen');return;}document.getElementById('clockOutSiteName').textContent=currentSite.name;const dur=Date.now()-new Date(currentShift.clock_in).getTime();document.getElementById('clockOutDuration').textContent=fmtDur(dur,true);show('clockOutScreen');}
+async function doClockOut(){if(!currentShift)return;if(!isTokenValid('out')){toast('⚠ Session expired — scan QR again','warn');show('mainScreen');return;}loading(true,'Clocking out...');try{const now=new Date().toISOString(),dur=Math.round((Date.now()-new Date(currentShift.clock_in).getTime())/60000);await db.query('shifts','PATCH',{clock_out:now,duration_minutes:dur},`?id=eq.${currentShift.id}`);consumeToken();toast(`✓ Clocked out · ${fmtDur(dur*60000)} logged`,'success');currentShift=null;localStorage.removeItem('td_shift');clearInterval(elapsedTimer);clearInterval(hoursTimer);show('mainScreen');updateDashboard();loading(false);}catch(e){loading(false);toast('⚠ Could not clock out. Try again.','error');}}
+async function updateDashboard(){if(!currentGuard)return;document.getElementById('greetName').textContent=currentGuard.name||`Employee ${currentGuard.employee_id}`;document.getElementById('greetId').textContent=`ID: ${currentGuard.employee_id}`;const card=document.getElementById('statusCard');clearInterval(elapsedTimer);clearInterval(hoursTimer);const btn=document.getElementById('btnClockOut'),hint=document.getElementById('clockOutHint');if(currentShift){card.classList.add('on');document.getElementById('sText').textContent='On Duty';document.getElementById('sSite').textContent=currentShift.site_name;btn.disabled=false;hint.style.display='block';const tick=()=>{const ms=Date.now()-new Date(currentShift.clock_in).getTime();document.getElementById('sElapsed').textContent=fmtDur(ms,true);};tick();elapsedTimer=setInterval(tick,1000);}else{card.classList.remove('on');document.getElementById('sText').textContent='Off Duty';document.getElementById('sSite').textContent='';document.getElementById('sElapsed').textContent='0:00:00';btn.disabled=true;hint.style.display='none';}try{const shifts=await db.query('shifts','GET',null,`?guard_id=eq.${currentGuard.id}&order=clock_in.desc&limit=30`);calcHours(shifts);renderShifts(shifts);if(currentShift){hoursTimer=setInterval(()=>calcHours(shifts),60000);}}catch(e){console.log('Could not load shifts',e);}}
 function calcHours(shifts){const now=Date.now(),todayStart=new Date();todayStart.setHours(0,0,0,0);const weekStart=new Date();weekStart.setDate(weekStart.getDate()-weekStart.getDay());weekStart.setHours(0,0,0,0);const periodStart=new Date();periodStart.setDate(1);periodStart.setHours(0,0,0,0);let tMs=0,wMs=0,pMs=0;const all=[...shifts];if(currentShift)all.unshift({clock_in:currentShift.clock_in,clock_out:null});all.forEach(s=>{const inT=new Date(s.clock_in).getTime(),outT=s.clock_out?new Date(s.clock_out).getTime():now,dur=outT-inT;if(inT>=todayStart.getTime())tMs+=dur;if(inT>=weekStart.getTime())wMs+=dur;if(inT>=periodStart.getTime())pMs+=dur;});document.getElementById('hToday').textContent=fmtDur(tMs);document.getElementById('hWeek').textContent=fmtDur(wMs);document.getElementById('hPeriod').textContent=fmtDur(pMs);}
-function renderShifts(shifts){const list=document.getElementById('shiftList');const all=[...shifts];if(currentShift)all.unshift({...currentShift,clock_out:null});if(!all.length){list.innerHTML='<div class="no-shifts">No shifts yet — scan a QR code to clock in.</div>';return;}list.innerHTML=all.map(s=>{const live=!s.clock_out,dur=live?Date.now()-new Date(s.clock_in).getTime():s.duration_minutes*60000;return`<div class="shift-entry ${live?'active':'done'}"><div><div class="shift-site">${s.site_name}</div><div class="shift-time">IN ${fmtTime(new Date(s.clock_in))}${live?'':' · OUT '+fmtTime(new Date(s.clock_out))} · ${fmtDate(new Date(s.clock_in))}</div></div><div class="shift-dur ${live?'live':''}">${fmtDur(dur)}</div></div>`;}).join('');}
+function renderShifts(shifts){const list=document.getElementById('shiftList');const all=[...shifts];if(currentShift)all.unshift({...currentShift,clock_out:null});if(!all.length){list.innerHTML='<div class="no-shifts">No shifts yet — scan a site QR code to clock in.</div>';return;}list.innerHTML=all.map(s=>{const live=!s.clock_out,dur=live?Date.now()-new Date(s.clock_in).getTime():s.duration_minutes*60000;return`<div class="shift-entry ${live?'active':'done'}"><div><div class="shift-site">${s.site_name}</div><div class="shift-time">IN ${fmtTime(new Date(s.clock_in))}${live?'':' · OUT '+fmtTime(new Date(s.clock_out))} · ${fmtDate(new Date(s.clock_in))}</div></div><div class="shift-dur ${live?'live':''}">${fmtDur(dur)}</div></div>`;}).join('');}
 function tickClock(){const now=new Date();let h=now.getHours(),m=now.getMinutes(),s=now.getSeconds();const ap=h>=12?'PM':'AM';h=h%12||12;const el=document.getElementById('liveTime');if(el)el.textContent=`${h}:${pad(m)}:${pad(s)} ${ap}`;}
 tickClock();setInterval(tickClock,1000);
 const urlParams=new URLSearchParams(window.location.search);
 const siteParam=urlParams.get('site');
-if(siteParam){loading(true,'Loading site...');db.query('sites','GET',null,`?id=eq.${siteParam}`).then(sites=>{loading(false);if(sites&&sites.length){currentSite=sites[0];startGpsVerify();}else{toast('⚠ Site not found','error');show(currentGuard?'mainScreen':'setupScreen');}}).catch(()=>{loading(false);show(currentGuard?'mainScreen':'setupScreen');});}else if(currentGuard){show('mainScreen');updateDashboard();}else{show('mainScreen');toast('Scan a site QR code to get started','warn');}
+if(siteParam){scanMode=currentShift?'out':'in';loading(true,'Loading site...');db.query('sites','GET',null,`?id=eq.${siteParam}`).then(sites=>{loading(false);if(sites&&sites.length){currentSite=sites[0];createToken(siteParam,scanMode);startGpsVerify();}else{toast('⚠ Site not found','error');show('mainScreen');updateDashboard();}}).catch(()=>{loading(false);show('mainScreen');updateDashboard();});}else if(currentGuard){show('mainScreen');updateDashboard();}else{show('mainScreen');toast('Scan a site QR code to get started','warn');}
 </script>
 </body>
 </html>
