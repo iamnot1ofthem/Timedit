@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Timedit · Supervisor</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #07090C;
+  --surface: #0D1117;
+  --surface2: #131920;
+  --surface3: #1A2330;
+  --border: #1C2733;
+  --border2: #243040;
+  --accent: #3B82F6;
+  --accent-dim: rgba(59,130,246,0.1);
+  --green: #10FF8A;
+  --green-dim: rgba(16,255,138,0.08);
+  --green-glow: rgba(16,255,138,0.2);
+  --text: #EDF2F7;
+  --text2: #A0AEC0;
+  --muted: #4A5568;
+  --red: #FF4565;
+  --red-dim: rgba(255,69,101,0.1);
+  --orange: #FFB340;
+  --orange-dim: rgba(255,179,64,0.1);
+  --syne: 'Syne', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { background: var(--bg); color: var(--text); font-family: var(--syne); min-height: 100vh; overflow-x: hidden; }
+.screen { display: none; min-height: 100vh; flex-direction: column; }
+.screen.active { display: flex; }
+.centered { align-items: center; justify-content: center; padding: 32px 24px; }
+.login-wrap { max-width: 400px; width: 100%; margin: 0 auto; }
+.logo { font-family: var(--syne); font-size: 32px; font-weight: 800; letter-spacing: -1px; text-align: center; margin-bottom: 6px; }
+.logo span { color: var(--accent); }
+.logo-sub { font-family: var(--mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); text-align: center; margin-bottom: 32px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px 24px; display: flex; flex-direction: column; gap: 18px; }
+.card-title { font-size: 18px; font-weight: 700; }
+.card-sub { font-family: var(--mono); font-size: 11px; color: var(--muted); line-height: 1.7; margin-top: -10px; }
+.field { display: flex; flex-direction: column; gap: 7px; }
+.field-label { font-family: var(--mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text2); }
+.field-input { width: 100%; background: var(--surface2); border: 1px solid var(--border2); color: var(--text); font-family: var(--mono); font-size: 15px; font-weight: 600; padding: 13px 16px; outline: none; border-radius: 10px; transition: border-color 0.2s, box-shadow 0.2s; letter-spacing: 1px; }
+.field-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+.field-input::placeholder { color: var(--muted); font-weight: 400; letter-spacing: 0; }
+.btn { width: 100%; font-family: var(--syne); font-size: 15px; font-weight: 700; border: none; padding: 15px; cursor: pointer; border-radius: 10px; transition: opacity 0.15s, transform 0.1s; letter-spacing: 0.3px; }
+.btn:active { transform: scale(0.98); }
+.btn-accent { background: var(--accent); color: #fff; }
+.btn-green { background: var(--green); color: #000; box-shadow: 0 4px 20px var(--green-glow); }
+.btn-ghost { background: var(--surface2); color: var(--text2); border: 1px solid var(--border2); }
+.btn-red { background: var(--red); color: #fff; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.pin-row { display: flex; justify-content: center; gap: 14px; }
+.pin-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--border2); background: transparent; transition: all 0.15s; }
+.pin-dot.filled { background: var(--accent); border-color: var(--accent); transform: scale(1.1); }
+.pin-dot.error { background: var(--red); border-color: var(--red); animation: shake 0.3s ease; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+.numpad { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.num-btn { background: var(--surface2); border: 1px solid var(--border2); color: var(--text); font-family: var(--syne); font-size: 20px; font-weight: 700; padding: 16px; border-radius: 10px; cursor: pointer; transition: background 0.1s, transform 0.1s; line-height: 1; }
+.num-btn:active { background: var(--surface3); transform: scale(0.95); }
+.num-btn.ghost { background: transparent; border-color: transparent; color: var(--muted); font-size: 16px; }
+.err-msg { font-family: var(--mono); font-size: 11px; color: var(--red); text-align: center; display: none; }
+#dashScreen { background: var(--bg); }
+.top-nav { padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg); z-index: 100; }
+.nav-logo { font-size: 18px; font-weight: 800; }
+.nav-logo span { color: var(--accent); }
+.nav-badge { font-family: var(--mono); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent); padding: 3px 8px; border-radius: 100px; margin-left: 8px; }
+.nav-right { display: flex; align-items: center; gap: 10px; }
+.nav-sup-name { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.btn-logout { font-family: var(--mono); font-size: 10px; color: var(--muted); background: none; border: 1px solid var(--border2); padding: 5px 10px; border-radius: 6px; cursor: pointer; letter-spacing: 1px; text-transform: uppercase; }
+.tabs { display: flex; border-bottom: 1px solid var(--border); padding: 0 20px; gap: 4px; overflow-x: auto; }
+.tab { font-family: var(--mono); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; padding: 12px 16px; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; white-space: nowrap; transition: color 0.15s, border-color 0.15s; background: none; border-top: none; border-left: none; border-right: none; }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab-panel { display: none; padding: 20px; flex: 1; }
+.tab-panel.active { display: block; }
+.live-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.live-title { font-size: 18px; font-weight: 800; }
+.live-count { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.stat-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+.stat-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
+.stat-val { font-family: var(--mono); font-size: 24px; font-weight: 600; }
+.stat-val.green { color: var(--green); }
+.stat-val.red { color: var(--red); }
+.stat-key { font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+.section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; margin-top: 20px; }
+.guard-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.guard-card.on { border-color: var(--green); }
+.guard-name { font-size: 14px; font-weight: 700; }
+.guard-meta { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 3px; }
+.guard-status { text-align: right; }
+.status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 100px; font-family: var(--mono); font-size: 9px; letter-spacing: 1px; text-transform: uppercase; }
+.status-pill.on { background: rgba(16,255,138,0.1); color: var(--green); border: 1px solid var(--green); }
+.status-pill.off { background: var(--surface2); color: var(--muted); border: 1px solid var(--border2); }
+.s-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.status-pill.on .s-dot { animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.guard-elapsed { font-family: var(--mono); font-size: 14px; font-weight: 600; color: var(--green); margin-top: 4px; }
+.filter-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.filter-select { background: var(--surface2); border: 1px solid var(--border2); color: var(--text); font-family: var(--mono); font-size: 11px; padding: 8px 12px; border-radius: 8px; outline: none; cursor: pointer; }
+.filter-input { background: var(--surface2); border: 1px solid var(--border2); color: var(--text); font-family: var(--mono); font-size: 11px; padding: 8px 12px; border-radius: 8px; outline: none; flex: 1; min-width: 120px; }
+.filter-input::placeholder { color: var(--muted); }
+.btn-export { font-family: var(--mono); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; background: var(--green-dim); color: var(--green); border: 1px solid var(--green); padding: 8px 14px; border-radius: 8px; cursor: pointer; white-space: nowrap; }
+.shifts-table { width: 100%; border-collapse: collapse; }
+.shifts-table th { font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+.shifts-table td { font-family: var(--mono); font-size: 11px; padding: 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.shifts-table tr:last-child td { border-bottom: none; }
+.shifts-table tr:hover td { background: var(--surface2); }
+.shift-active-badge { background: var(--green-dim); color: var(--green); border: 1px solid var(--green); font-family: var(--mono); font-size: 9px; padding: 2px 8px; border-radius: 100px; letter-spacing: 1px; }
+.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; overflow-x: auto; }
+.site-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 10px; }
+.site-name { font-size: 16px; font-weight: 700; }
+.site-meta { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 4px; letter-spacing: 0.5px; }
+.site-actions { display: flex; gap: 8px; margin-top: 12px; }
+.btn-sm { font-family: var(--mono); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; padding: 7px 12px; border-radius: 7px; cursor: pointer; border: 1px solid var(--border2); background: var(--surface2); color: var(--text2); transition: all 0.15s; }
+.btn-sm:hover { border-color: var(--accent); color: var(--accent); }
+.btn-sm.green { border-color: var(--green); color: var(--green); background: var(--green-dim); }
+.add-site-form { background: var(--surface); border: 1px solid var(--accent); border-radius: 12px; padding: 20px; margin-bottom: 16px; display: none; flex-direction: column; gap: 14px; }
+.add-site-form.open { display: flex; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.guard-row { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+.guard-row-name { font-size: 14px; font-weight: 700; }
+.guard-row-meta { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 3px; }
+.role-badge { font-family: var(--mono); font-size: 9px; letter-spacing: 1px; text-transform: uppercase; padding: 2px 8px; border-radius: 100px; }
+.role-badge.guard { background: var(--surface2); color: var(--muted); border: 1px solid var(--border2); }
+.role-badge.supervisor { background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent); }
+.guard-row-actions { display: flex; gap: 6px; align-items: center; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 400; padding: 20px; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--surface); border: 1px solid var(--border2); border-radius: 16px; padding: 24px; width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 16px; }
+.modal-title { font-size: 18px; font-weight: 800; }
+.modal-actions { display: flex; gap: 10px; }
+.loading-overlay { position: fixed; inset: 0; background: rgba(7,9,12,0.9); display: none; align-items: center; justify-content: center; flex-direction: column; gap: 16px; z-index: 500; }
+.loading-overlay.show { display: flex; }
+.spinner { width: 32px; height: 32px; border: 3px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-family: var(--mono); font-size: 12px; color: var(--muted); letter-spacing: 1px; }
+.toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--surface2); border: 1px solid var(--border2); padding: 13px 22px; font-family: var(--mono); font-size: 12px; color: var(--text); transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1); white-space: nowrap; z-index: 600; border-radius: 12px; max-width: 90vw; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.success { border-left: 3px solid var(--green); }
+.toast.warn { border-left: 3px solid var(--orange); }
+.toast.error { border-left: 3px solid var(--red); }
+.empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-family: var(--mono); font-size: 11px; border: 1px dashed var(--border); border-radius: 12px; line-height: 1.8; }
+.live-ticker { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 1px; }
+@media (min-width: 768px) {
+  .tab-panel { padding: 24px 32px; max-width: 1100px; margin: 0 auto; width: 100%; }
+  .stat-row { grid-template-columns: repeat(4, 1fr); }
+  .form-grid { grid-template-columns: 1fr 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="screen centered active" id="loginScreen" style="flex-direction:column">
+  <div class="login-wrap">
+    <div class="logo">Time<span>dit</span></div>
+    <div class="logo-sub">Supervisor Portal</div>
+    <div class="card">
+      <div class="card-title">Supervisor Login</div>
+      <div class="card-sub">Enter your employee number and company code to continue.</div>
+      <div class="field">
+        <label class="field-label">Employee Number</label>
+        <input class="field-input" id="loginEmpId" type="tel" placeholder="Your employee number..." inputmode="numeric" />
+      </div>
+      <div class="field">
+        <label class="field-label">Company Code</label>
+        <input class="field-input" id="loginCompanyCode" type="text" placeholder="e.g. SEC-SUP-9134..." style="text-transform:uppercase" />
+      </div>
+      <button class="btn btn-accent" onclick="loginStep2()">Next →</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen centered" id="pinScreen" style="flex-direction:column">
+  <div class="login-wrap">
+    <div class="logo">Time<span>dit</span></div>
+    <div class="logo-sub">Supervisor Portal</div>
+    <div class="card">
+      <div class="card-title">Enter PIN</div>
+      <div class="card-sub" id="pinWelcome">—</div>
+      <div class="pin-row">
+        <div class="pin-dot" id="ld0"></div>
+        <div class="pin-dot" id="ld1"></div>
+        <div class="pin-dot" id="ld2"></div>
+        <div class="pin-dot" id="ld3"></div>
+      </div>
+      <div class="numpad">
+        <button class="num-btn" onclick="pinTap('1')">1</button>
+        <button class="num-btn" onclick="pinTap('2')">2</button>
+        <button class="num-btn" onclick="pinTap('3')">3</button>
+        <button class="num-btn" onclick="pinTap('4')">4</button>
+        <button class="num-btn" onclick="pinTap('5')">5</button>
+        <button class="num-btn" onclick="pinTap('6')">6</button>
+        <button class="num-btn" onclick="pinTap('7')">7</button>
+        <button class="num-btn" onclick="pinTap('8')">8</button>
+        <button class="num-btn" onclick="pinTap('9')">9</button>
+        <button class="num-btn ghost" onclick="pinBack()">⌫</button>
+        <button class="num-btn" onclick="pinTap('0')">0</button>
+        <button class="num-btn ghost" onclick="show('loginScreen')">←</button>
+      </div>
+      <div class="err-msg" id="pinErr">⚠ Incorrect PIN — try again</div>
+    </div>
+  </div>
+</div>
+
+<div class="screen centered" id="registerScreen" style="flex-direction:column">
+  <div class="login-wrap">
+    <div class="logo">Time<span>dit</span></div>
+    <div class="logo-sub">Create Supervisor Account</div>
+    <div class="card">
+      <div class="card-title">Set Up Your Account</div>
+      <div class="card-sub">You're verified as a supervisor. Set your name and create a PIN.</div>
+      <div class="field">
+        <label class="field-label">Full Name</label>
+        <input class="field-input" id="regName" type="text" placeholder="Your full name..." />
+      </div>
+      <div class="card-sub" style="margin-top:0">Choose a 4-digit PIN:</div>
+      <div class="pin-row">
+        <div class="pin-dot" id="rp0"></div>
+        <div class="pin-dot" id="rp1"></div>
+        <div class="pin-dot" id="rp2"></div>
+        <div class="pin-dot" id="rp3"></div>
+      </div>
+      <div class="numpad">
+        <button class="num-btn" onclick="regPinTap('1')">1</button>
+        <button class="num-btn" onclick="regPinTap('2')">2</button>
+        <button class="num-btn" onclick="regPinTap('3')">3</button>
+        <button class="num-btn" onclick="regPinTap('4')">4</button>
+        <button class="num-btn" onclick="regPinTap('5')">5</button>
+        <button class="num-btn" onclick="regPinTap('6')">6</button>
+        <button class="num-btn" onclick="regPinTap('7')">7</button>
+        <button class="num-btn" onclick="regPinTap('8')">8</button>
+        <button class="num-btn" onclick="regPinTap('9')">9</button>
+        <button class="num-btn ghost" onclick="regPinBack()">⌫</button>
+        <button class="num-btn" onclick="regPinTap('0')">0</button>
+        <button class="num-btn ghost"></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="dashScreen">
+  <div class="top-nav">
+    <div style="display:flex;align-items:center">
+      <div class="nav-logo">Time<span>dit</span></div>
+      <div class="nav-badge">Supervisor</div>
+    </div>
+    <div class="nav-right">
+      <div class="nav-sup-name" id="navSupName">—</div>
+      <button class="btn-logout" onclick="logout()">Sign Out</button>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('live',this)">🟢 Live</button>
+    <button class="tab" onclick="switchTab('shifts',this)">📋 Shifts</button>
+    <button class="tab" onclick="switchTab('sites',this)">📍 Sites</button>
+    <button class="tab" onclick="switchTab('guards',this)">👥 Guards</button>
+  </div>
+  <div class="tab-panel active" id="tab-live">
+    <div class="live-header">
+      <div class="live-title">Live View</div>
+      <div class="live-ticker" id="liveTicker">—</div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-box"><div class="stat-val green" id="statOnDuty">0</div><div class="stat-key">On Duty</div></div>
+      <div class="stat-box"><div class="stat-val" id="statOffDuty">0</div><div class="stat-key">Off Duty</div></div>
+      <div class="stat-box"><div class="stat-val" id="statSites">0</div><div class="stat-key">Active Sites</div></div>
+    </div>
+    <div class="section-label">On Duty Now</div>
+    <div id="onDutyList"><div class="empty-state">No guards currently on duty</div></div>
+    <div class="section-label">Off Duty</div>
+    <div id="offDutyList"><div class="empty-state">No guards registered yet</div></div>
+  </div>
+  <div class="tab-panel" id="tab-shifts">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:18px;font-weight:800">Shift Records</div>
+      <button class="btn-export" onclick="exportCSV()">⬇ Export CSV</button>
+    </div>
+    <div class="filter-row">
+      <input class="filter-input" id="filterGuard" placeholder="Filter by guard name..." oninput="filterShifts()" />
+      <input class="filter-input" id="filterDate" type="date" oninput="filterShifts()" style="max-width:160px" />
+      <select class="filter-select" id="filterSite" onchange="filterShifts()">
+        <option value="">All Sites</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table class="shifts-table">
+        <thead>
+          <tr>
+            <th>Guard</th><th>Site</th><th>Date</th><th>Clock In</th><th>Clock Out</th><th>Hours</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="shiftsTableBody">
+          <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;font-family:var(--mono);font-size:11px">Loading shifts...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="tab-panel" id="tab-sites">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:18px;font-weight:800">Sites</div>
+      <button class="btn-sm green" onclick="toggleAddSite()">+ Add Site</button>
+    </div>
+    <div class="add-site-form" id="addSiteForm">
+      <div style="font-size:16px;font-weight:700">New Site</div>
+      <div class="form-grid">
+        <div class="field"><label class="field-label">Site Name</label><input class="field-input" id="newSiteName" placeholder="e.g. Downtown Office" /></div>
+        <div class="field"><label class="field-label">Site Number</label><input class="field-input" id="newSiteNum" placeholder="e.g. SITE-002" /></div>
+        <div class="field"><label class="field-label">Latitude</label><input class="field-input" id="newSiteLat" placeholder="e.g. 42.3601" type="number" step="any" /></div>
+        <div class="field"><label class="field-label">Longitude</label><input class="field-input" id="newSiteLng" placeholder="e.g. -71.0589" type="number" step="any" /></div>
+        <div class="field"><label class="field-label">GPS Radius (meters)</label><input class="field-input" id="newSiteRadius" placeholder="100" type="number" value="100" /></div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-green" onclick="addSite()">Save Site</button>
+        <button class="btn btn-ghost" onclick="toggleAddSite()">Cancel</button>
+      </div>
+    </div>
+    <div id="sitesList"></div>
+  </div>
+  <div class="tab-panel" id="tab-guards">
+    <div style="font-size:18px;font-weight:800;margin-bottom:16px">All Guards</div>
+    <div id="guardsList"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="resetModal">
+  <div class="modal">
+    <div class="modal-title">Reset PIN</div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--muted)" id="resetModalName">—</div>
+    <div class="field">
+      <label class="field-label">New PIN (4 digits)</label>
+      <input class="field-input" id="resetPinInput" type="tel" maxlength="4" inputmode="numeric" placeholder="Enter new PIN..." />
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-accent" onclick="confirmResetPin()" style="flex:1">Reset PIN</button>
+      <button class="btn btn-ghost" onclick="closeModal()" style="flex:1">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loader">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loaderText">Loading...</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL='https://zxnsqorwixmaazuovwvg.supabase.co';
+const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4bnNxb3J3aXhtYWF6dW92d3ZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxNjE5OTMsImV4cCI6MjA4NzczNzk5M30.pTt0WqKR-6i54gT-nhgv1wru7Y0KvfG1A1GdRkmCAEc';
+const db={async query(table,method='GET',body=null,filter=''){const res=await fetch(`${SUPABASE_URL}/rest/v1/${table}${filter}`,{method,headers:{'apikey':SUPABASE_ANON,'Authorization':`Bearer ${SUPABASE_ANON}`,'Content-Type':'application/json','Prefer':method==='POST'?'return=representation':method==='PATCH'?'return=representation':''},body:body?JSON.stringify(body):null});if(!res.ok)throw new Error(await res.text());if(method==='DELETE')return null;const text=await res.text();return text?JSON.parse(text):null;}};
+let currentSup=JSON.parse(localStorage.getItem('td_sup')||'null');
+let currentCompany=JSON.parse(localStorage.getItem('td_sup_company')||'null');
+let loginEmpId='',loginCompany=null,pinEntry='',regPin='',allShifts=[],allGuards=[],liveTimer=null,selectedGuardForReset=null;
+const pad=n=>String(n).padStart(2,'0');
+function fmtTime(ts){const d=new Date(ts);let h=d.getHours(),m=d.getMinutes();const ap=h>=12?'PM':'AM';h=h%12||12;return `${h}:${pad(m)} ${ap}`;}
+function fmtDate(ts){return new Date(ts).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});}
+function fmtDur(ms){const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60);return `${h}:${pad(m)}`;}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function loading(v,text='Loading...'){document.getElementById('loaderText').textContent=text;document.getElementById('loader').classList.toggle('show',v);}
+function toast(msg,type='success'){const t=document.getElementById('toast');t.textContent=msg;t.className=`toast ${type}`;setTimeout(()=>t.classList.add('show'),10);setTimeout(()=>t.classList.remove('show'),3500);}
+async function loginStep2(){const empId=document.getElementById('loginEmpId').value.trim(),code=document.getElementById('loginCompanyCode').value.trim().toUpperCase();if(!empId){toast('⚠ Enter your employee number','warn');return;}if(!code){toast('⚠ Enter your company code','warn');return;}loading(true,'Verifying...');try{const companies=await db.query('companies','GET',null,`?supervisor_code=eq.${code}`);if(!companies||!companies.length){loading(false);toast('⚠ Invalid company code','error');return;}loginCompany=companies[0];loginEmpId=empId;const guards=await db.query('guards','GET',null,`?employee_id=eq.${empId}`);loading(false);if(guards&&guards.length){const guard=guards[0];if(guard.role!=='supervisor'){await db.query('guards','PATCH',{role:'supervisor',company:loginCompany.name},`?id=eq.${guard.id}`);}document.getElementById('pinWelcome').textContent=`Welcome, ${guard.name||'Supervisor'} · ID ${empId}`;pinEntry='';updateLoginDots();document.getElementById('pinErr').style.display='none';currentSup={...guard,role:'supervisor'};show('pinScreen');}else{show('registerScreen');}}catch(e){loading(false);toast('⚠ Could not verify. Try again.','error');}}
+function pinTap(n){if(pinEntry.length>=4)return;pinEntry+=n;updateLoginDots();if(pinEntry.length===4)setTimeout(checkLoginPin,150);}
+function pinBack(){pinEntry=pinEntry.slice(0,-1);updateLoginDots();}
+function updateLoginDots(){for(let i=0;i<4;i++){const d=document.getElementById('ld'+i);d.className='pin-dot'+(i<pinEntry.length?' filled':'');}}
+async function checkLoginPin(){if(pinEntry!==currentSup.pin){for(let i=0;i<4;i++)document.getElementById('ld'+i).className='pin-dot error';document.getElementById('pinErr').style.display='block';setTimeout(()=>{pinEntry='';updateLoginDots();},900);return;}document.getElementById('pinErr').style.display='none';localStorage.setItem('td_sup',JSON.stringify(currentSup));localStorage.setItem('td_sup_company',JSON.stringify(loginCompany));currentCompany=loginCompany;enterDashboard();}
+function regPinTap(n){if(regPin.length>=4)return;regPin+=n;updateRegDots();if(regPin.length===4)setTimeout(completeRegister,200);}
+function regPinBack(){regPin=regPin.slice(0,-1);updateRegDots();}
+function updateRegDots(){for(let i=0;i<4;i++){const d=document.getElementById('rp'+i);d.className='pin-dot'+(i<regPin.length?' filled':'');}}
+async function completeRegister(){const name=document.getElementById('regName').value.trim();if(!name){toast('⚠ Enter your full name','warn');regPin='';updateRegDots();return;}loading(true,'Creating account...');try{const result=await db.query('guards','POST',{employee_id:loginEmpId,pin:regPin,name,company:loginCompany.name,role:'supervisor'});currentSup=result[0];localStorage.setItem('td_sup',JSON.stringify(currentSup));localStorage.setItem('td_sup_company',JSON.stringify(loginCompany));currentCompany=loginCompany;loading(false);enterDashboard();}catch(e){loading(false);toast('⚠ Could not create account','error');regPin='';updateRegDots();}}
+function logout(){localStorage.removeItem('td_sup');localStorage.removeItem('td_sup_company');currentSup=null;currentCompany=null;clearInterval(liveTimer);show('loginScreen');}
+function enterDashboard(){document.getElementById('navSupName').textContent=currentSup.name||`Supervisor ${currentSup.employee_id}`;show('dashScreen');loadLive();loadShifts();loadSites();loadGuards();clearInterval(liveTimer);liveTimer=setInterval(loadLive,30000);}
+function switchTab(tab,el){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));el.classList.add('active');document.getElementById('tab-'+tab).classList.add('active');}
+async function loadLive(){try{const[guards,shifts]=await Promise.all([db.query('guards','GET',null,`?company=eq.${currentCompany.name}&role=eq.guard`),db.query('shifts','GET',null,`?company=eq.${currentCompany.name}&clock_out=is.null&order=clock_in.desc`)]);const activeShiftMap={};(shifts||[]).forEach(s=>{activeShiftMap[s.guard_id]=s;});const onDuty=(guards||[]).filter(g=>activeShiftMap[g.id]),offDuty=(guards||[]).filter(g=>!activeShiftMap[g.id]);document.getElementById('statOnDuty').textContent=onDuty.length;document.getElementById('statOffDuty').textContent=offDuty.length;const sites=await db.query('sites','GET',null,`?company=eq.${currentCompany.name}`);document.getElementById('statSites').textContent=(sites||[]).length;const now=new Date();document.getElementById('liveTicker').textContent=`Updated ${now.getHours()%12||12}:${pad(now.getMinutes())} ${now.getHours()>=12?'PM':'AM'}`;const onList=document.getElementById('onDutyList');if(!onDuty.length){onList.innerHTML='<div class="empty-state">No guards currently on duty</div>';}else{onList.innerHTML=onDuty.map(g=>{const shift=activeShiftMap[g.id],ms=Date.now()-new Date(shift.clock_in).getTime();return`<div class="guard-card on"><div><div class="guard-name">${g.name||'Guard '+g.employee_id}</div><div class="guard-meta">ID ${g.employee_id} · ${shift.site_name} · IN ${fmtTime(new Date(shift.clock_in))}</div></div><div class="guard-status"><div class="status-pill on"><div class="s-dot"></div>On Duty</div><div class="guard-elapsed">${fmtDur(ms)}</div></div></div>`;}).join('');}const offList=document.getElementById('offDutyList');if(!offDuty.length){offList.innerHTML='<div class="empty-state">No off-duty guards</div>';}else{offList.innerHTML=offDuty.map(g=>`<div class="guard-card"><div><div class="guard-name">${g.name||'Guard '+g.employee_id}</div><div class="guard-meta">ID ${g.employee_id}</div></div><div class="status-pill off"><div class="s-dot"></div>Off Duty</div></div>`).join('');}}catch(e){console.log('Live load error',e);}}
+async function loadShifts(){try{const shifts=await db.query('shifts','GET',null,`?company=eq.${currentCompany.name}&order=clock_in.desc&limit=200`);allShifts=shifts||[];renderShiftsTable(allShifts);const sites=[...new Set(allShifts.map(s=>s.site_name))];const sel=document.getElementById('filterSite');sel.innerHTML='<option value="">All Sites</option>'+sites.map(s=>`<option value="${s}">${s}</option>`).join('');}catch(e){console.log('Shifts load error',e);}}
+function filterShifts(){const name=document.getElementById('filterGuard').value.toLowerCase(),date=document.getElementById('filterDate').value,site=document.getElementById('filterSite').value;let filtered=allShifts;if(name)filtered=filtered.filter(s=>(s.guard_name||'').toLowerCase().includes(name));if(date)filtered=filtered.filter(s=>s.clock_in.startsWith(date));if(site)filtered=filtered.filter(s=>s.site_name===site);renderShiftsTable(filtered);}
+function renderShiftsTable(shifts){const tbody=document.getElementById('shiftsTableBody');if(!shifts.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;font-family:var(--mono);font-size:11px">No shifts found</td></tr>';return;}tbody.innerHTML=shifts.map(s=>{const active=!s.clock_out,dur=active?Date.now()-new Date(s.clock_in).getTime():s.duration_minutes*60000;return`<tr><td style="font-weight:700">${s.guard_name||'—'}</td><td>${s.site_name||'—'}</td><td>${fmtDate(new Date(s.clock_in))}</td><td>${fmtTime(new Date(s.clock_in))}</td><td>${active?'<span style="color:var(--green)">Active</span>':fmtTime(new Date(s.clock_out))}</td><td>${fmtDur(dur)}</td><td>${active?'<span class="shift-active-badge">ON DUTY</span>':'<span style="color:var(--muted);font-size:9px;letter-spacing:1px">COMPLETE</span>'}</td></tr>`;}).join('');}
+function exportCSV(){const name=document.getElementById('filterGuard').value.toLowerCase(),date=document.getElementById('filterDate').value,site=document.getElementById('filterSite').value;let filtered=allShifts;if(name)filtered=filtered.filter(s=>(s.guard_name||'').toLowerCase().includes(name));if(date)filtered=filtered.filter(s=>s.clock_in.startsWith(date));if(site)filtered=filtered.filter(s=>s.site_name===site);const rows=[['Guard Name','Employee ID','Site','Date','Clock In','Clock Out','Hours']];filtered.forEach(s=>{const dur=s.clock_out?fmtDur(s.duration_minutes*60000):'Active';rows.push([s.guard_name||'',s.guard_id||'',s.site_name||'',fmtDate(new Date(s.clock_in)),fmtTime(new Date(s.clock_in)),s.clock_out?fmtTime(new Date(s.clock_out)):'Active',dur]);});const csv=rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n'),blob=new Blob([csv],{type:'text/csv'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`timedit-shifts-${new Date().toISOString().split('T')[0]}.csv`;a.click();toast('✓ CSV exported','success');}
+async function loadSites(){try{const sites=await db.query('sites','GET',null,`?company=eq.${currentCompany.name}&order=created_at.desc`);const list=document.getElementById('sitesList');if(!sites||!sites.length){list.innerHTML='<div class="empty-state">No sites yet.<br>Add your first site above.</div>';return;}list.innerHTML=sites.map(s=>`<div class="site-card"><div class="site-name">${s.name}</div><div class="site-meta">${s.site_number||'No site number'} · GPS: ${s.latitude}, ${s.longitude} · Radius: ${s.geo_radius_meters}m</div><div class="site-actions"><button class="btn-sm green" onclick="generateQR('${s.id}','${s.name}','${s.site_number||''}')">⊡ QR Code</button></div></div>`).join('');}catch(e){console.log('Sites load error',e);}}
+function toggleAddSite(){document.getElementById('addSiteForm').classList.toggle('open');}
+async function addSite(){const name=document.getElementById('newSiteName').value.trim(),num=document.getElementById('newSiteNum').value.trim(),lat=parseFloat(document.getElementById('newSiteLat').value),lng=parseFloat(document.getElementById('newSiteLng').value),radius=parseInt(document.getElementById('newSiteRadius').value)||100;if(!name||isNaN(lat)||isNaN(lng)){toast('⚠ Fill in all required fields','warn');return;}loading(true,'Adding site...');try{await db.query('sites','POST',{name,site_number:num,latitude:lat,longitude:lng,geo_radius_meters:radius,company:currentCompany.name});loading(false);toast('✓ Site added','success');document.getElementById('addSiteForm').classList.remove('open');['newSiteName','newSiteNum','newSiteLat','newSiteLng'].forEach(id=>document.getElementById(id).value='');document.getElementById('newSiteRadius').value='100';loadSites();}catch(e){loading(false);toast('⚠ Could not add site','error');}}
+function generateQR(siteId,siteName,siteNum){const url=`https://timedit.vercel.app?site=${siteId}`;const win=window.open('','_blank');win.document.write(`<!DOCTYPE html><html><head><title>QR - ${siteName}</title><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script><style>body{font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:#fff;gap:16px;padding:32px}h1{font-size:24px;font-weight:800;margin:0}.sub{font-size:12px;color:#666;letter-spacing:2px;text-transform:uppercase}.hint{font-size:11px;color:#999;text-align:center;max-width:220px;line-height:1.6}button{background:#3B82F6;color:#fff;border:none;padding:12px 24px;font-size:14px;font-weight:700;border-radius:8px;cursor:pointer;margin-top:8px}@media print{button{display:none}}</style></head><body><div style="font-size:28px;font-weight:800">Time<span style="color:#3B82F6">dit</span></div><div id="qr"></div><h1>${siteName}</h1><div class="sub">${siteNum}</div><div class="hint">Scan to clock in or out at this location</div><button onclick="window.print()">🖨 Print</button><script>new QRCode(document.getElementById('qr'),{text:'${url}',width:220,height:220,colorDark:'#07090C',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});<\/script></body></html>`);}
+async function loadGuards(){try{const guards=await db.query('guards','GET',null,`?company=eq.${currentCompany.name}&order=name.asc`);allGuards=guards||[];const list=document.getElementById('guardsList');if(!allGuards.length){list.innerHTML='<div class="empty-state">No guards registered yet</div>';return;}list.innerHTML=allGuards.map(g=>`<div class="guard-row"><div><div class="guard-row-name">${g.name||'Guard '+g.employee_id}</div><div class="guard-row-meta">ID ${g.employee_id} · <span class="role-badge ${g.role||'guard'}">${g.role||'guard'}</span></div></div><div class="guard-row-actions"><button class="btn-sm" onclick="openResetPin('${g.id}','${g.name||'Guard '+g.employee_id}')">Reset PIN</button></div></div>`).join('');}catch(e){console.log('Guards load error',e);}}
+function openResetPin(guardId,guardName){selectedGuardForReset=guardId;document.getElementById('resetModalName').textContent=guardName;document.getElementById('resetPinInput').value='';document.getElementById('resetModal').classList.add('open');}
+function closeModal(){document.getElementById('resetModal').classList.remove('open');selectedGuardForReset=null;}
+async function confirmResetPin(){const newPin=document.getElementById('resetPinInput').value.trim();if(!/^\d{4}$/.test(newPin)){toast('⚠ PIN must be exactly 4 digits','warn');return;}loading(true,'Resetting PIN...');try{await db.query('guards','PATCH',{pin:newPin},`?id=eq.${selectedGuardForReset}`);loading(false);closeModal();toast('✓ PIN reset successfully','success');}catch(e){loading(false);toast('⚠ Could not reset PIN','error');}}
+if(currentSup&&currentCompany){enterDashboard();}else{show('loginScreen');}
+</script>
+</body>
+</html>
