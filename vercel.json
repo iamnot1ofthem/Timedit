@@ -1,8 +1,11 @@
 {
-  "outputDirectory": ".",
-  "rewrites": [
-    { "source": "/supervisor", "destination": "/supervisor.html" },
-    { "source": "/guard", "destination": "/index.html" },
-    { "source": "/", "destination": "/home.html" }
+  "version": 2,
+  "builds": [
+    { "src": "*.html", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/supervisor", "dest": "/supervisor.html" },
+    { "src": "/guard", "dest": "/index.html" },
+    { "src": "/", "dest": "/home.html" }
   ]
 }
