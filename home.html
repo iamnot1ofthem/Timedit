@@ -329,18 +329,35 @@ const observer = new IntersectionObserver((entries) => {
 }, { threshold: 0.1 });
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-function submitForm() {
+async function submitForm() {
   const company = document.getElementById('company').value.trim();
   const name = document.getElementById('name').value.trim();
   const email = document.getElementById('email').value.trim();
-  if (!company || !name || !email) { alert('Please fill in company name, your name, and email.'); return; }
-  const subject = encodeURIComponent(`Demo Request from ${company}`);
   const size = document.getElementById('size').value.trim();
   const message = document.getElementById('message').value.trim();
-  const body = encodeURIComponent(`Company: ${company}\nName: ${name}\nEmail: ${email}\nSize: ${size||'Not specified'}\n\nMessage:\n${message||'None'}`);
-  window.location.href = `mailto:hello@timedit.app?subject=${subject}&body=${body}`;
-  document.getElementById('contactForm').style.display = 'none';
-  document.getElementById('successMsg').style.display = 'block';
+  if (!company || !name || !email) { alert('Please fill in company name, your name, and email.'); return; }
+  const btn = document.querySelector('#contactForm .btn-primary');
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+  try {
+    const res = await fetch('https://formspree.io/f/mbdzgrpy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ company, name, email, size: size||'Not specified', message: message||'None' })
+    });
+    if (res.ok) {
+      document.getElementById('contactForm').style.display = 'none';
+      document.getElementById('successMsg').style.display = 'block';
+    } else {
+      alert('Something went wrong. Please try again.');
+      btn.textContent = '→ Request Demo';
+      btn.disabled = false;
+    }
+  } catch(e) {
+    alert('Something went wrong. Please try again.');
+    btn.textContent = '→ Request Demo';
+    btn.disabled = false;
+  }
 }
 </script>
 </body>
