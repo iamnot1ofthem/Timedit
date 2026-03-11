@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -348,6 +349,16 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
 <script>
 const SUPABASE_URL='https://zxnsqorwixmaazuovwvg.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4bnNxb3J3aXhtYWF6dW92d3ZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxNjE5OTMsImV4cCI6MjA4NzczNzk5M30.pTt0WqKR-6i54gT-nhgv1wru7Y0KvfG1A1GdRkmCAEc';
+
+// ── SHA-256 PIN hashing ──────────────────────────────────────────────────────
+async function hashPin(pin) {
+  const msgBuffer = new TextEncoder().encode(pin);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+// ────────────────────────────────────────────────────────────────────────────
+
 const db={async query(table,method='GET',body=null,filter=''){const res=await fetch(`${SUPABASE_URL}/rest/v1/${table}${filter}`,{method,headers:{'apikey':SUPABASE_ANON,'Authorization':`Bearer ${SUPABASE_ANON}`,'Content-Type':'application/json','Prefer':method==='POST'?'return=representation':method==='PATCH'?'return=representation':''},body:body?JSON.stringify(body):null});if(!res.ok)throw new Error(await res.text());if(method==='DELETE')return null;const text=await res.text();return text?JSON.parse(text):null;}};
 let currentSup=JSON.parse(localStorage.getItem('td_sup')||'null');
 let currentCompany=JSON.parse(localStorage.getItem('td_sup_company')||'null');
@@ -359,15 +370,69 @@ function fmtDur(ms){const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floo
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
 function loading(v,text='Loading...'){document.getElementById('loaderText').textContent=text;document.getElementById('loader').classList.toggle('show',v);}
 function toast(msg,type='success'){const t=document.getElementById('toast');t.textContent=msg;t.className=`toast ${type}`;setTimeout(()=>t.classList.add('show'),10);setTimeout(()=>t.classList.remove('show'),3500);}
-async function loginStep2(){const empId=document.getElementById('loginEmpId').value.trim(),code=document.getElementById('loginCompanyCode').value.trim().toUpperCase();if(!empId){toast('⚠ Enter your employee number','warn');return;}if(!code){toast('⚠ Enter your company code','warn');return;}loading(true,'Verifying...');try{const companies=await db.query('companies','GET',null,`?supervisor_code=eq.${code}`);if(!companies||!companies.length){loading(false);toast('⚠ Invalid company code','error');return;}loginCompany=companies[0];loginEmpId=empId;const guards=await db.query('guards','GET',null,`?employee_id=eq.${empId}`);loading(false);if(guards&&guards.length){const guard=guards[0];if(guard.role!=='supervisor'){await db.query('guards','PATCH',{role:'supervisor',company:loginCompany.name},`?id=eq.${guard.id}`);}document.getElementById('pinWelcome').textContent=`Welcome, ${guard.name||'Supervisor'} · ID ${empId}`;pinEntry='';updateLoginDots();document.getElementById('pinErr').style.display='none';currentSup={...guard,role:'supervisor'};show('pinScreen');}else{show('registerScreen');}}catch(e){loading(false);toast('⚠ Could not verify. Try again.','error');}}
+
+async function loginStep2(){
+  const empId=document.getElementById('loginEmpId').value.trim(),code=document.getElementById('loginCompanyCode').value.trim().toUpperCase();
+  if(!empId){toast('⚠ Enter your employee number','warn');return;}
+  if(!code){toast('⚠ Enter your company code','warn');return;}
+  loading(true,'Verifying...');
+  try{
+    const companies=await db.query('companies','GET',null,`?supervisor_code=eq.${code}`);
+    if(!companies||!companies.length){loading(false);toast('⚠ Invalid company code','error');return;}
+    loginCompany=companies[0];loginEmpId=empId;
+    const guards=await db.query('guards','GET',null,`?employee_id=eq.${empId}`);
+    loading(false);
+    if(guards&&guards.length){
+      const guard=guards[0];
+      if(guard.role!=='supervisor'){await db.query('guards','PATCH',{role:'supervisor',company:loginCompany.name},`?id=eq.${guard.id}`);}
+      document.getElementById('pinWelcome').textContent=`Welcome, ${guard.name||'Supervisor'} · ID ${empId}`;
+      pinEntry='';updateLoginDots();document.getElementById('pinErr').style.display='none';
+      currentSup={...guard,role:'supervisor'};
+      show('pinScreen');
+    }else{show('registerScreen');}
+  }catch(e){loading(false);toast('⚠ Could not verify. Try again.','error');}
+}
+
 function pinTap(n){if(pinEntry.length>=4)return;pinEntry+=n;updateLoginDots();if(pinEntry.length===4)setTimeout(checkLoginPin,150);}
 function pinBack(){pinEntry=pinEntry.slice(0,-1);updateLoginDots();}
 function updateLoginDots(){for(let i=0;i<4;i++){const d=document.getElementById('ld'+i);d.className='pin-dot'+(i<pinEntry.length?' filled':'');}}
-async function checkLoginPin(){if(pinEntry!==currentSup.pin){for(let i=0;i<4;i++)document.getElementById('ld'+i).className='pin-dot error';document.getElementById('pinErr').style.display='block';setTimeout(()=>{pinEntry='';updateLoginDots();},900);return;}document.getElementById('pinErr').style.display='none';localStorage.setItem('td_sup',JSON.stringify(currentSup));localStorage.setItem('td_sup_company',JSON.stringify(loginCompany));currentCompany=loginCompany;enterDashboard();}
+
+async function checkLoginPin(){
+  // Hash the entered PIN and compare to stored hash
+  const enteredHash = await hashPin(pinEntry);
+  if(enteredHash !== currentSup.pin){
+    for(let i=0;i<4;i++)document.getElementById('ld'+i).className='pin-dot error';
+    document.getElementById('pinErr').style.display='block';
+    setTimeout(()=>{pinEntry='';updateLoginDots();},900);
+    return;
+  }
+  document.getElementById('pinErr').style.display='none';
+  localStorage.setItem('td_sup',JSON.stringify(currentSup));
+  localStorage.setItem('td_sup_company',JSON.stringify(loginCompany));
+  currentCompany=loginCompany;
+  enterDashboard();
+}
+
 function regPinTap(n){if(regPin.length>=4)return;regPin+=n;updateRegDots();if(regPin.length===4)setTimeout(completeRegister,200);}
 function regPinBack(){regPin=regPin.slice(0,-1);updateRegDots();}
 function updateRegDots(){for(let i=0;i<4;i++){const d=document.getElementById('rp'+i);d.className='pin-dot'+(i<regPin.length?' filled':'');}}
-async function completeRegister(){const name=document.getElementById('regName').value.trim();if(!name){toast('⚠ Enter your full name','warn');regPin='';updateRegDots();return;}loading(true,'Creating account...');try{const result=await db.query('guards','POST',{employee_id:loginEmpId,pin:regPin,name,company:loginCompany.name,role:'supervisor'});currentSup=result[0];localStorage.setItem('td_sup',JSON.stringify(currentSup));localStorage.setItem('td_sup_company',JSON.stringify(loginCompany));currentCompany=loginCompany;loading(false);enterDashboard();}catch(e){loading(false);toast('⚠ Could not create account','error');regPin='';updateRegDots();}}
+
+async function completeRegister(){
+  const name=document.getElementById('regName').value.trim();
+  if(!name){toast('⚠ Enter your full name','warn');regPin='';updateRegDots();return;}
+  loading(true,'Creating account...');
+  try{
+    // Hash the PIN before storing
+    const pinHash = await hashPin(regPin);
+    const result=await db.query('guards','POST',{employee_id:loginEmpId,pin:pinHash,name,company:loginCompany.name,role:'supervisor'});
+    currentSup=result[0];
+    localStorage.setItem('td_sup',JSON.stringify(currentSup));
+    localStorage.setItem('td_sup_company',JSON.stringify(loginCompany));
+    currentCompany=loginCompany;
+    loading(false);enterDashboard();
+  }catch(e){loading(false);toast('⚠ Could not create account','error');regPin='';updateRegDots();}
+}
+
 function logout(){localStorage.removeItem('td_sup');localStorage.removeItem('td_sup_company');currentSup=null;currentCompany=null;clearInterval(liveTimer);show('loginScreen');}
 function enterDashboard(){document.getElementById('navSupName').textContent=currentSup.name||`Supervisor ${currentSup.employee_id}`;show('dashScreen');loadLive();loadShifts();loadSites();loadGuards();clearInterval(liveTimer);liveTimer=setInterval(loadLive,30000);}
 function switchTab(tab,el){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));el.classList.add('active');document.getElementById('tab-'+tab).classList.add('active');}
@@ -379,12 +444,26 @@ function exportCSV(){const name=document.getElementById('filterGuard').value.toL
 async function loadSites(){try{const sites=await db.query('sites','GET',null,`?company=eq.${currentCompany.name}&order=created_at.desc`);const list=document.getElementById('sitesList');if(!sites||!sites.length){list.innerHTML='<div class="empty-state">No sites yet.<br>Add your first site above.</div>';return;}list.innerHTML=sites.map(s=>`<div class="site-card"><div class="site-name">${s.name}</div><div class="site-meta">${s.site_number||'No site number'} · GPS: ${s.latitude}, ${s.longitude} · Radius: ${s.geo_radius_meters}m</div><div class="site-actions"><button class="btn-sm green" onclick="generateQR('${s.id}','${s.name}','${s.site_number||''}')">⊡ QR Code</button></div></div>`).join('');}catch(e){console.log('Sites load error',e);}}
 function toggleAddSite(){document.getElementById('addSiteForm').classList.toggle('open');}
 async function addSite(){const name=document.getElementById('newSiteName').value.trim(),num=document.getElementById('newSiteNum').value.trim(),lat=parseFloat(document.getElementById('newSiteLat').value),lng=parseFloat(document.getElementById('newSiteLng').value),radius=parseInt(document.getElementById('newSiteRadius').value)||100;if(!name||isNaN(lat)||isNaN(lng)){toast('⚠ Fill in all required fields','warn');return;}loading(true,'Adding site...');try{await db.query('sites','POST',{name,site_number:num,latitude:lat,longitude:lng,geo_radius_meters:radius,company:currentCompany.name});loading(false);toast('✓ Site added','success');document.getElementById('addSiteForm').classList.remove('open');['newSiteName','newSiteNum','newSiteLat','newSiteLng'].forEach(id=>document.getElementById(id).value='');document.getElementById('newSiteRadius').value='100';loadSites();}catch(e){loading(false);toast('⚠ Could not add site','error');}}
-function generateQR(siteId,siteName,siteNum){const url=`https://timedit.vercel.app?site=${siteId}`;const win=window.open('','_blank');win.document.write(`<!DOCTYPE html><html><head><title>QR - ${siteName}</title><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script><style>body{font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:#fff;gap:16px;padding:32px}h1{font-size:24px;font-weight:800;margin:0}.sub{font-size:12px;color:#666;letter-spacing:2px;text-transform:uppercase}.hint{font-size:11px;color:#999;text-align:center;max-width:220px;line-height:1.6}button{background:#3B82F6;color:#fff;border:none;padding:12px 24px;font-size:14px;font-weight:700;border-radius:8px;cursor:pointer;margin-top:8px}@media print{button{display:none}}</style></head><body><div style="font-size:28px;font-weight:800">Time<span style="color:#3B82F6">dit</span></div><div id="qr"></div><h1>${siteName}</h1><div class="sub">${siteNum}</div><div class="hint">Scan to clock in or out at this location</div><button onclick="window.print()">🖨 Print</button><script>new QRCode(document.getElementById('qr'),{text:'${url}',width:220,height:220,colorDark:'#07090C',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});<\/script></body></html>`);}
-async function loadGuards(){try{const guards=await db.query('guards','GET',null,`?company=eq.${currentCompany.name}&order=name.asc`);allGuards=guards||[];const list=document.getElementById('guardsList');if(!allGuards.length){list.innerHTML='<div class="empty-state">No guards registered yet</div>';return;}list.innerHTML=allGuards.map(g=>`<div class="guard-row"><div><div class="guard-row-name">${g.name||'Guard '+g.employee_id}</div><div class="guard-row-meta">ID ${g.employee_id} · <span class="role-badge ${g.role||'guard'}">${g.role||'guard'}</span></div></div><div class="guard-row-actions"><button class="btn-sm" onclick="openResetPin('${g.id}','${g.name||'Guard '+g.employee_id}')">Reset PIN</button></div></div>`).join('');}catch(e){console.log('Guards load error',e);}}
-function openResetPin(guardId,guardName){selectedGuardForReset=guardId;document.getElementById('resetModalName').textContent=guardName;document.getElementById('resetPinInput').value='';document.getElementById('resetModal').classList.add('open');}
-function closeModal(){document.getElementById('resetModal').classList.remove('open');selectedGuardForReset=null;}
-async function confirmResetPin(){const newPin=document.getElementById('resetPinInput').value.trim();if(!/^\d{4}$/.test(newPin)){toast('⚠ PIN must be exactly 4 digits','warn');return;}loading(true,'Resetting PIN...');try{await db.query('guards','PATCH',{pin:newPin},`?id=eq.${selectedGuardForReset}`);loading(false);closeModal();toast('✓ PIN reset successfully','success');}catch(e){loading(false);toast('⚠ Could not reset PIN','error');}}
-if(currentSup&&currentCompany){enterDashboard();}else{show('loginScreen');}
+function generateQR(siteId,siteName,siteNum){const url=`https://timedit.app?site=${siteId}`;const win=window.open('','_blank');win.document.write(`<!DOCTYPE html><html><head><title>QR - ${siteName}</title><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script><style>body{font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:#fff;gap:16px;padding:32px}h1{font-size:24px;font-weight:800;margin:0}.sub{font-size:12px;color:#666;letter-spacing:2px;text-transform:uppercase}.hint{font-size:11px;color:#999;text-align:center;max-width:220px;line-height:1.6}button{background:#3B82F6;color:#fff;border:none;padding:12px 24px;font-size:14px;font-weight:700;border-radius:8px;cursor:pointer;margin-top:8px}@media print{button{display:none}}</style></head><body><div style="font-size:28px;font-weight:800">Time<span style="color:#3B82F6">dit</span></div><div id="qr"></div><h1>${siteName}</h1><div class="sub">${siteNum}</div><div class="hint">Scan to clock in or out at this location</div><button onclick="window.print()">🖨 Print</button><script>new QRCode(document.getElementById('qr'),{text:'${url}',width:220,height:220,colorDark:'#07090C',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});<\/script></body></html>`);}
+
+async function loadGuards(){try{const guards=await db.query(‘guards’,‘GET’,null,`?company=eq.${currentCompany.name}&order=name.asc`);allGuards=guards||[];const list=document.getElementById(‘guardsList’);if(!allGuards.length){list.innerHTML=’<div class="empty-state">No guards registered yet</div>’;return;}list.innerHTML=allGuards.map(g=>`<div class="guard-row"><div><div class="guard-row-name">${g.name||'Guard '+g.employee_id}</div><div class="guard-row-meta">ID ${g.employee_id} · <span class="role-badge ${g.role||'guard'}">${g.role||'guard'}</span></div></div><div class="guard-row-actions"><button class="btn-sm" onclick="openResetPin('${g.id}','${g.name||'Guard '+g.employee_id}')">Reset PIN</button></div></div>`).join(’’);}catch(e){console.log(‘Guards load error’,e);}}
+function openResetPin(guardId,guardName){selectedGuardForReset=guardId;document.getElementById(‘resetModalName’).textContent=guardName;document.getElementById(‘resetPinInput’).value=’’;document.getElementById(‘resetModal’).classList.add(‘open’);}
+function closeModal(){document.getElementById(‘resetModal’).classList.remove(‘open’);selectedGuardForReset=null;}
+
+async function confirmResetPin(){
+const newPin=document.getElementById(‘resetPinInput’).value.trim();
+if(!/^\d{4}$/.test(newPin)){toast(‘⚠ PIN must be exactly 4 digits’,‘warn’);return;}
+loading(true,‘Resetting PIN…’);
+try{
+// Hash the new PIN before storing
+const pinHash = await hashPin(newPin);
+await db.query(‘guards’,‘PATCH’,{pin:pinHash},`?id=eq.${selectedGuardForReset}`);
+loading(false);closeModal();toast(‘✓ PIN reset successfully’,‘success’);
+}catch(e){loading(false);toast(‘⚠ Could not reset PIN’,‘error’);}
+}
+
+if(currentSup&&currentCompany){enterDashboard();}else{show(‘loginScreen’);}
 </script>
+
 </body>
 </html>
