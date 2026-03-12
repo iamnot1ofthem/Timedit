@@ -247,15 +247,64 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
   </div>
 
   <div class="tab-panel" id="tab-shifts">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <div style="font-size:18px;font-weight:800">Shift Records</div>
-      <button class="btn-export" onclick="exportCSV()">⬇ Export CSV</button>
+    <div style="font-size:18px;font-weight:800;margin-bottom:4px">Payroll Export</div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:20px">Select a pay period, review hours, then export a payroll-ready file.</div>
+
+    <!-- Pay Period Selector -->
+    <div class="table-wrap" style="padding:16px 20px;margin-bottom:16px">
+      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end">
+        <div>
+          <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">PAY PERIOD</div>
+          <select class="filter-select" id="payPeriodPreset" onchange="applyPayPeriod()" style="font-size:12px;min-width:180px">
+            <option value="this_week">This Week</option>
+            <option value="last_week">Last Week</option>
+            <option value="this_month">This Month</option>
+            <option value="last_month">Last Month</option>
+            <option value="last_14">Last 14 Days</option>
+            <option value="custom">Custom Range</option>
+          </select>
+        </div>
+        <div id="customRangeWrap" style="display:none;gap:8px;flex-wrap:wrap;align-items:flex-end">
+          <div>
+            <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">FROM</div>
+            <input class="filter-input" id="payFrom" type="date" oninput="loadShifts()" style="max-width:150px" />
+          </div>
+          <div>
+            <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">TO</div>
+            <input class="filter-input" id="payTo" type="date" oninput="loadShifts()" style="max-width:150px" />
+          </div>
+        </div>
+        <div>
+          <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">FILTER GUARD</div>
+          <input class="filter-input" id="filterGuard" placeholder="All guards..." oninput="filterShifts()" style="min-width:160px" />
+        </div>
+        <div>
+          <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">FILTER SITE</div>
+          <select class="filter-select" id="filterSite" onchange="filterShifts()"><option value="">All Sites</option></select>
+        </div>
+      </div>
     </div>
-    <div class="filter-row">
-      <input class="filter-input" id="filterGuard" placeholder="Filter by guard name..." oninput="filterShifts()" />
-      <input class="filter-input" id="filterDate" type="date" oninput="filterShifts()" style="max-width:160px" />
-      <select class="filter-select" id="filterSite" onchange="filterShifts()"><option value="">All Sites</option></select>
+
+    <!-- Payroll Summary Cards -->
+    <div id="payrollSummaryCards" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px"></div>
+
+    <!-- Guard Summary Table -->
+    <div style="font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px">HOURS BY GUARD</div>
+    <div class="table-wrap" style="margin-bottom:16px">
+      <table class="shifts-table">
+        <thead><tr><th>Guard</th><th>Employee ID</th><th>Shifts</th><th>Regular Hrs</th><th>OT Hrs (>40)</th><th>Total Hrs</th></tr></thead>
+        <tbody id="guardSummaryBody"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px;font-family:var(--mono);font-size:11px">Loading...</td></tr></tbody>
+      </table>
     </div>
+
+    <!-- Export Buttons -->
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px">
+      <button class="btn-export" onclick="exportPayrollCSV()" style="flex:1;min-width:180px">⬇ Export Payroll CSV</button>
+      <button class="btn btn-ghost" onclick="exportDetailCSV()" style="flex:1;min-width:180px;font-family:var(--mono);font-size:11px">⬇ Detailed Shifts CSV</button>
+    </div>
+
+    <!-- Detailed Shifts Table -->
+    <div style="font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px">ALL SHIFT RECORDS</div>
     <div class="table-wrap">
       <table class="shifts-table">
         <thead><tr><th>Guard</th><th>Site</th><th>Date</th><th>Clock In</th><th>Clock Out</th><th>Hours</th><th>Status</th></tr></thead>
@@ -432,8 +481,9 @@ function logout(){localStorage.removeItem('td_sup');localStorage.removeItem('td_
 
 function enterDashboard(){
   document.getElementById('navSupName').textContent=currentSup.name||`Supervisor ${currentSup.employee_id}`;
-  show('dashScreen');loadLive();loadShifts();loadSites();loadGuards();
+  show('dashScreen');loadLive();loadSites();loadGuards();
   schedViewDate=new Date();renderSchedDate();
+  applyPayPeriod();
   clearInterval(liveTimer);liveTimer=setInterval(loadLive,30000);
 }
 
@@ -447,10 +497,210 @@ function switchTab(tab,el){
 
 async function loadLive(){try{const[guards,shifts]=await Promise.all([db.query('guards','GET',null,`?company=eq.${currentCompany.name}&role=eq.guard`),db.query('shifts','GET',null,`?company=eq.${currentCompany.name}&clock_out=is.null&order=clock_in.desc`)]);const map={};(shifts||[]).forEach(s=>{map[s.guard_id]=s;});const on=(guards||[]).filter(g=>map[g.id]),off=(guards||[]).filter(g=>!map[g.id]);document.getElementById('statOnDuty').textContent=on.length;document.getElementById('statOffDuty').textContent=off.length;const sites=await db.query('sites','GET',null,`?company=eq.${currentCompany.name}`);document.getElementById('statSites').textContent=(sites||[]).length;const now=new Date();document.getElementById('liveTicker').textContent=`Updated ${now.getHours()%12||12}:${pad(now.getMinutes())} ${now.getHours()>=12?'PM':'AM'}`;const onList=document.getElementById('onDutyList');if(!on.length){onList.innerHTML='<div class="empty-state">No guards currently on duty</div>';}else{onList.innerHTML=on.map(g=>{const s=map[g.id],ms=Date.now()-new Date(s.clock_in).getTime();return`<div class="guard-card on"><div><div class="guard-name">${g.name||'Guard '+g.employee_id}</div><div class="guard-meta">ID ${g.employee_id} · ${s.site_name} · IN ${fmtTime(new Date(s.clock_in))}</div></div><div class="guard-status"><div class="status-pill on"><div class="s-dot"></div>On Duty</div><div class="guard-elapsed">${fmtDur(ms)}</div></div></div>`;}).join('');}const offList=document.getElementById('offDutyList');if(!off.length){offList.innerHTML='<div class="empty-state">No off-duty guards</div>';}else{offList.innerHTML=off.map(g=>`<div class="guard-card"><div><div class="guard-name">${g.name||'Guard '+g.employee_id}</div><div class="guard-meta">ID ${g.employee_id}</div></div><div class="status-pill off"><div class="s-dot"></div>Off Duty</div></div>`).join('');}}catch(e){console.log('Live load error',e);}}
 
-async function loadShifts(){try{const shifts=await db.query('shifts','GET',null,`?company=eq.${currentCompany.name}&order=clock_in.desc&limit=200`);allShifts=shifts||[];renderShiftsTable(allShifts);const sites=[...new Set(allShifts.map(s=>s.site_name))];const sel=document.getElementById('filterSite');sel.innerHTML='<option value="">All Sites</option>'+sites.map(s=>`<option value="${s}">${s}</option>`).join('');}catch(e){console.log('Shifts load error',e);}}
-function filterShifts(){const name=document.getElementById('filterGuard').value.toLowerCase(),date=document.getElementById('filterDate').value,site=document.getElementById('filterSite').value;let f=allShifts;if(name)f=f.filter(s=>(s.guard_name||'').toLowerCase().includes(name));if(date)f=f.filter(s=>s.clock_in.startsWith(date));if(site)f=f.filter(s=>s.site_name===site);renderShiftsTable(f);}
-function renderShiftsTable(shifts){const tbody=document.getElementById('shiftsTableBody');if(!shifts.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;font-family:var(--mono);font-size:11px">No shifts found</td></tr>';return;}tbody.innerHTML=shifts.map(s=>{const active=!s.clock_out,dur=active?Date.now()-new Date(s.clock_in).getTime():s.duration_minutes*60000;return`<tr><td style="font-weight:700">${s.guard_name||'—'}</td><td>${s.site_name||'—'}</td><td>${fmtDate(new Date(s.clock_in))}</td><td>${fmtTime(new Date(s.clock_in))}</td><td>${active?'<span style="color:var(--green)">Active</span>':fmtTime(new Date(s.clock_out))}</td><td>${fmtDur(dur)}</td><td>${active?'<span class="shift-active-badge">ON DUTY</span>':'<span style="color:var(--muted);font-size:9px;letter-spacing:1px">COMPLETE</span>'}</td></tr>`;}).join('');}
-function exportCSV(){const name=document.getElementById('filterGuard').value.toLowerCase(),date=document.getElementById('filterDate').value,site=document.getElementById('filterSite').value;let f=allShifts;if(name)f=f.filter(s=>(s.guard_name||'').toLowerCase().includes(name));if(date)f=f.filter(s=>s.clock_in.startsWith(date));if(site)f=f.filter(s=>s.site_name===site);const rows=[['Guard Name','Employee ID','Site','Date','Clock In','Clock Out','Hours']];f.forEach(s=>{const dur=s.clock_out?fmtDur(s.duration_minutes*60000):'Active';rows.push([s.guard_name||'',s.guard_id||'',s.site_name||'',fmtDate(new Date(s.clock_in)),fmtTime(new Date(s.clock_in)),s.clock_out?fmtTime(new Date(s.clock_out)):'Active',dur]);});const csv=rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n'),blob=new Blob([csv],{type:'text/csv'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`timedit-shifts-${new Date().toISOString().split('T')[0]}.csv`;a.click();toast('✓ CSV exported','success');}
+async function loadShifts(){
+  try{
+    const from=document.getElementById('payFrom')?.value;
+    const to=document.getElementById('payTo')?.value;
+    let query=`?company=eq.${currentCompany.name}&order=clock_in.desc&limit=500`;
+    if(from)query+=`&clock_in=gte.${from}T00:00:00`;
+    if(to)query+=`&clock_in=lte.${to}T23:59:59`;
+    const shifts=await db.query('shifts','GET',null,query);
+    allShifts=shifts||[];
+    const sites=[...new Set(allShifts.map(s=>s.site_name))];
+    const sel=document.getElementById('filterSite');
+    sel.innerHTML='<option value="">All Sites</option>'+sites.map(s=>`<option value="${s}">${s}</option>`).join('');
+    filterShifts();
+  }catch(e){console.log('Shifts load error',e);}
+}
+
+function applyPayPeriod(){
+  const preset=document.getElementById('payPeriodPreset').value;
+  const customWrap=document.getElementById('customRangeWrap');
+  const now=new Date();
+  let from,to;
+  if(preset==='custom'){customWrap.style.display='flex';return;}
+  customWrap.style.display='none';
+  if(preset==='this_week'){
+    const day=now.getDay()||7;
+    from=new Date(now);from.setDate(now.getDate()-day+1);
+    to=new Date(now);
+  } else if(preset==='last_week'){
+    const day=now.getDay()||7;
+    from=new Date(now);from.setDate(now.getDate()-day-6);
+    to=new Date(now);to.setDate(now.getDate()-day);
+  } else if(preset==='this_month'){
+    from=new Date(now.getFullYear(),now.getMonth(),1);
+    to=new Date(now);
+  } else if(preset==='last_month'){
+    from=new Date(now.getFullYear(),now.getMonth()-1,1);
+    to=new Date(now.getFullYear(),now.getMonth(),0);
+  } else if(preset==='last_14'){
+    from=new Date(now);from.setDate(now.getDate()-13);
+    to=new Date(now);
+  }
+  document.getElementById('payFrom').value=from.toISOString().split('T')[0];
+  document.getElementById('payTo').value=to.toISOString().split('T')[0];
+  loadShifts();
+}
+
+function filterShifts(){
+  const name=document.getElementById('filterGuard').value.toLowerCase();
+  const site=document.getElementById('filterSite').value;
+  let f=allShifts.filter(s=>s.clock_out); // only completed shifts for payroll
+  if(name)f=f.filter(s=>(s.guard_name||'').toLowerCase().includes(name));
+  if(site)f=f.filter(s=>s.site_name===site);
+  renderShiftsTable(f);
+  renderGuardSummary(f);
+  renderSummaryCards(f);
+}
+
+function renderSummaryCards(shifts){
+  const totalMins=shifts.reduce((a,s)=>a+(s.duration_minutes||0),0);
+  const totalHrs=(totalMins/60).toFixed(2);
+  const guards=new Set(shifts.map(s=>s.guard_id)).size;
+  const from=document.getElementById('payFrom')?.value||'';
+  const to=document.getElementById('payTo')?.value||'';
+  const period=from&&to?`${from} → ${to}`:'All time';
+  document.getElementById('payrollSummaryCards').innerHTML=`
+    <div class="stat-box" style="flex:1;min-width:140px"><div class="stat-val" style="color:var(--accent)">${totalHrs}</div><div class="stat-key">Total Hours</div></div>
+    <div class="stat-box" style="flex:1;min-width:140px"><div class="stat-val">${shifts.length}</div><div class="stat-key">Completed Shifts</div></div>
+    <div class="stat-box" style="flex:1;min-width:140px"><div class="stat-val">${guards}</div><div class="stat-key">Guards</div></div>
+    <div class="stat-box" style="flex:1;min-width:200px"><div class="stat-val" style="font-size:13px;letter-spacing:0">${period}</div><div class="stat-key">Pay Period</div></div>
+  `;
+}
+
+function renderGuardSummary(shifts){
+  const map={};
+  const guardLookup={};
+  (allGuards||[]).forEach(g=>guardLookup[g.id]=g.employee_id||'—');
+  shifts.forEach(s=>{
+    const key=s.guard_id;
+    if(!map[key])map[key]={name:s.guard_name||'Unknown',guardId:s.guard_id,shifts:0,mins:0};
+    map[key].shifts++;
+    map[key].mins+=(s.duration_minutes||0);
+  });
+  const guards=Object.values(map).sort((a,b)=>b.mins-a.mins);
+  const tbody=document.getElementById('guardSummaryBody');
+  if(!guards.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px;font-family:var(--mono);font-size:11px">No completed shifts in this period</td></tr>';return;}
+  tbody.innerHTML=guards.map(g=>{
+    const totalHrs=g.mins/60;
+    const regHrs=Math.min(totalHrs,40);
+    const otHrs=Math.max(0,totalHrs-40);
+    const empId=guardLookup[g.guardId]||'—';
+    return`<tr>
+      <td style="font-weight:700">${g.name}</td>
+      <td style="font-family:var(--mono);font-size:12px">${empId}</td>
+      <td>${g.shifts}</td>
+      <td style="font-weight:700;color:var(--accent)">${regHrs.toFixed(2)}</td>
+      <td style="font-weight:700;color:${otHrs>0?'#ff9800':'var(--muted)'}">${otHrs.toFixed(2)}</td>
+      <td style="font-weight:800">${totalHrs.toFixed(2)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderShiftsTable(shifts){
+  const tbody=document.getElementById('shiftsTableBody');
+  if(!shifts.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;font-family:var(--mono);font-size:11px">No completed shifts found</td></tr>';return;}
+  tbody.innerHTML=shifts.map(s=>{
+    const hrs=(s.duration_minutes/60).toFixed(2);
+    return`<tr>
+      <td style="font-weight:700">${s.guard_name||'—'}</td>
+      <td>${s.site_name||'—'}</td>
+      <td>${fmtDate(new Date(s.clock_in))}</td>
+      <td>${fmtTime(new Date(s.clock_in))}</td>
+      <td>${fmtTime(new Date(s.clock_out))}</td>
+      <td style="font-weight:700">${hrs} hrs</td>
+      <td><span style="color:var(--muted);font-size:9px;letter-spacing:1px">COMPLETE</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function getFilteredShifts(){
+  const name=document.getElementById('filterGuard').value.toLowerCase();
+  const site=document.getElementById('filterSite').value;
+  let f=allShifts.filter(s=>s.clock_out);
+  if(name)f=f.filter(s=>(s.guard_name||'').toLowerCase().includes(name));
+  if(site)f=f.filter(s=>s.site_name===site);
+  return f;
+}
+
+function exportPayrollCSV(){
+  const shifts=getFilteredShifts();
+  const from=document.getElementById('payFrom')?.value||'';
+  const to=document.getElementById('payTo')?.value||'';
+  const company=currentCompany.name;
+  const exportDate=new Date().toLocaleDateString('en-US');
+
+  // Build guard summary
+  const map={};
+  shifts.forEach(s=>{
+    if(!map[s.guard_id])map[s.guard_id]={name:s.guard_name||'',id:s.guard_id,shifts:0,mins:0};
+    map[s.guard_id].shifts++;
+    map[s.guard_id].mins+=(s.duration_minutes||0);
+  });
+
+  const rows=[
+    [`TIMEDIT PAYROLL REPORT`],
+    [`Company:`,company],
+    [`Pay Period:`,from,`to`,to],
+    [`Export Date:`,exportDate],
+    [`Total Guards:`,Object.keys(map).length],
+    [`Total Shifts:`,shifts.length],
+    [],
+    [`--- PAYROLL SUMMARY ---`],
+    [`Guard Name`,`Employee ID`,`Total Shifts`,`Regular Hours (≤40)`,`Overtime Hours (>40)`,`Total Hours`],
+  ];
+
+  Object.values(map).sort((a,b)=>b.mins-a.mins).forEach(g=>{
+    const totalHrs=g.mins/60;
+    const regHrs=Math.min(totalHrs,40).toFixed(2);
+    const otHrs=Math.max(0,totalHrs-40).toFixed(2);
+    rows.push([g.name,g.id,g.shifts,regHrs,otHrs,totalHrs.toFixed(2)]);
+  });
+
+  rows.push([]);
+  rows.push([`--- SHIFT DETAIL ---`]);
+  rows.push([`Guard Name`,`Employee ID`,`Site`,`Date`,`Clock In`,`Clock Out`,`Hours Worked`]);
+  shifts.forEach(s=>{
+    const hrs=(s.duration_minutes/60).toFixed(2);
+    rows.push([
+      s.guard_name||'',
+      s.guard_id||'',
+      s.site_name||'',
+      fmtDate(new Date(s.clock_in)),
+      fmtTime(new Date(s.clock_in)),
+      fmtTime(new Date(s.clock_out)),
+      hrs
+    ]);
+  });
+
+  const csv=rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`timedit-payroll-${company.replace(/\s+/g,'-')}-${from||'all'}-to-${to||'all'}.csv`;
+  a.click();
+  toast('✓ Payroll CSV exported','success');
+}
+
+function exportDetailCSV(){
+  const shifts=getFilteredShifts();
+  const from=document.getElementById('payFrom')?.value||'';
+  const to=document.getElementById('payTo')?.value||'';
+  const rows=[['Guard Name','Employee ID','Site','Date','Clock In','Clock Out','Hours Worked']];
+  shifts.forEach(s=>{
+    rows.push([s.guard_name||'',s.guard_id||'',s.site_name||'',fmtDate(new Date(s.clock_in)),fmtTime(new Date(s.clock_in)),fmtTime(new Date(s.clock_out)),(s.duration_minutes/60).toFixed(2)]);
+  });
+  const csv=rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`timedit-shifts-detail-${from||'all'}-to-${to||'all'}.csv`;
+  a.click();
+  toast('✓ Detailed CSV exported','success');
+}
 
 async function loadSites(){try{const sites=await db.query('sites','GET',null,`?company=eq.${currentCompany.name}&order=created_at.desc`);allSites=sites||[];const list=document.getElementById('sitesList');if(!allSites.length){list.innerHTML='<div class="empty-state">No sites yet.<br>Add your first site above.</div>';return;}list.innerHTML=allSites.map(s=>`<div class="site-card"><div class="site-name">${s.name}</div><div class="site-meta">${s.site_number||'No site number'} · GPS: ${s.latitude}, ${s.longitude} · Radius: ${s.geo_radius_meters}m</div><div class="site-actions"><button class="btn-sm green" onclick="generateQR('${s.id}','${s.name}','${s.site_number||''}')">⊡ QR Code</button></div></div>`).join('');}catch(e){console.log('Sites load error',e);}}
 function toggleAddSite(){document.getElementById('addSiteForm').classList.toggle('open');}
