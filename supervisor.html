@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -8,26 +7,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #07090C;
-  --surface: #0D1117;
-  --surface2: #131920;
-  --surface3: #1A2330;
-  --border: #1C2733;
-  --border2: #243040;
-  --accent: #3B82F6;
-  --accent-dim: rgba(59,130,246,0.1);
-  --green: #10FF8A;
-  --green-dim: rgba(16,255,138,0.08);
-  --green-glow: rgba(16,255,138,0.2);
-  --text: #EDF2F7;
-  --text2: #A0AEC0;
-  --muted: #4A5568;
-  --red: #FF4565;
-  --red-dim: rgba(255,69,101,0.1);
-  --orange: #FFB340;
-  --orange-dim: rgba(255,179,64,0.1);
-  --syne: 'Syne', sans-serif;
-  --mono: 'JetBrains Mono', monospace;
+  --bg: #07090C; --surface: #0D1117; --surface2: #131920; --surface3: #1A2330;
+  --border: #1C2733; --border2: #243040; --accent: #3B82F6; --accent-dim: rgba(59,130,246,0.1);
+  --green: #10FF8A; --green-dim: rgba(16,255,138,0.08); --green-glow: rgba(16,255,138,0.2);
+  --text: #EDF2F7; --text2: #A0AEC0; --muted: #4A5568; --red: #FF4565;
+  --red-dim: rgba(255,69,101,0.1); --orange: #FFB340; --orange-dim: rgba(255,179,64,0.1);
+  --syne: 'Syne', sans-serif; --mono: 'JetBrains Mono', monospace;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 body { background: var(--bg); color: var(--text); font-family: var(--syne); min-height: 100vh; overflow-x: hidden; }
@@ -51,7 +36,6 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
 .btn-accent { background: var(--accent); color: #fff; }
 .btn-green { background: var(--green); color: #000; box-shadow: 0 4px 20px var(--green-glow); }
 .btn-ghost { background: var(--surface2); color: var(--text2); border: 1px solid var(--border2); }
-.btn-red { background: var(--red); color: #fff; }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .pin-row { display: flex; justify-content: center; gap: 14px; }
 .pin-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--border2); background: transparent; transition: all 0.15s; }
@@ -78,12 +62,10 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
 .tab-panel.active { display: block; }
 .live-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .live-title { font-size: 18px; font-weight: 800; }
-.live-count { font-family: var(--mono); font-size: 11px; color: var(--muted); }
 .stat-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
 .stat-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
 .stat-val { font-family: var(--mono); font-size: 24px; font-weight: 600; }
 .stat-val.green { color: var(--green); }
-.stat-val.red { color: var(--red); }
 .stat-key { font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
 .section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; margin-top: 20px; }
 .guard-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -117,6 +99,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
 .btn-sm { font-family: var(--mono); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; padding: 7px 12px; border-radius: 7px; cursor: pointer; border: 1px solid var(--border2); background: var(--surface2); color: var(--text2); transition: all 0.15s; }
 .btn-sm:hover { border-color: var(--accent); color: var(--accent); }
 .btn-sm.green { border-color: var(--green); color: var(--green); background: var(--green-dim); }
+.btn-sm.red { border-color: var(--red); color: var(--red); background: var(--red-dim); }
 .add-site-form { background: var(--surface); border: 1px solid var(--accent); border-radius: 12px; padding: 20px; margin-bottom: 16px; display: none; flex-direction: column; gap: 14px; }
 .add-site-form.open { display: flex; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -127,9 +110,20 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
 .role-badge.guard { background: var(--surface2); color: var(--muted); border: 1px solid var(--border2); }
 .role-badge.supervisor { background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent); }
 .guard-row-actions { display: flex; gap: 6px; align-items: center; }
+/* Schedule */
+.date-nav { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.date-nav-btn { background: var(--surface2); border: 1px solid var(--border2); color: var(--text2); font-family: var(--mono); font-size: 14px; padding: 6px 14px; border-radius: 8px; cursor: pointer; transition: all 0.15s; }
+.date-nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+.date-display { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--text); flex: 1; text-align: center; }
+.sched-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.sched-card.today { border-color: var(--accent); }
+.sched-guard { font-size: 14px; font-weight: 700; }
+.sched-meta { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 4px; }
+.sched-time { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--accent); text-align: right; white-space: nowrap; }
+/* Modal */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 400; padding: 20px; }
 .modal-overlay.open { display: flex; }
-.modal { background: var(--surface); border: 1px solid var(--border2); border-radius: 16px; padding: 24px; width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 16px; }
+.modal { background: var(--surface); border: 1px solid var(--border2); border-radius: 16px; padding: 24px; width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 16px; max-height: 90vh; overflow-y: auto; }
 .modal-title { font-size: 18px; font-weight: 800; }
 .modal-actions { display: flex; gap: 10px; }
 .loading-overlay { position: fixed; inset: 0; background: rgba(7,9,12,0.9); display: none; align-items: center; justify-content: center; flex-direction: column; gap: 16px; z-index: 500; }
@@ -160,14 +154,8 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
     <div class="card">
       <div class="card-title">Supervisor Login</div>
       <div class="card-sub">Enter your employee number and company code to continue.</div>
-      <div class="field">
-        <label class="field-label">Employee Number</label>
-        <input class="field-input" id="loginEmpId" type="tel" placeholder="Your employee number..." inputmode="numeric" />
-      </div>
-      <div class="field">
-        <label class="field-label">Company Code</label>
-        <input class="field-input" id="loginCompanyCode" type="text" placeholder="e.g. SEC-SUP-9134..." style="text-transform:uppercase" />
-      </div>
+      <div class="field"><label class="field-label">Employee Number</label><input class="field-input" id="loginEmpId" type="tel" placeholder="Your employee number..." inputmode="numeric" /></div>
+      <div class="field"><label class="field-label">Company Code</label><input class="field-input" id="loginCompanyCode" type="text" placeholder="e.g. SEC-SUP-9134..." style="text-transform:uppercase" /></div>
       <button class="btn btn-accent" onclick="loginStep2()">Next →</button>
     </div>
   </div>
@@ -180,25 +168,12 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
     <div class="card">
       <div class="card-title">Enter PIN</div>
       <div class="card-sub" id="pinWelcome">—</div>
-      <div class="pin-row">
-        <div class="pin-dot" id="ld0"></div>
-        <div class="pin-dot" id="ld1"></div>
-        <div class="pin-dot" id="ld2"></div>
-        <div class="pin-dot" id="ld3"></div>
-      </div>
+      <div class="pin-row"><div class="pin-dot" id="ld0"></div><div class="pin-dot" id="ld1"></div><div class="pin-dot" id="ld2"></div><div class="pin-dot" id="ld3"></div></div>
       <div class="numpad">
-        <button class="num-btn" onclick="pinTap('1')">1</button>
-        <button class="num-btn" onclick="pinTap('2')">2</button>
-        <button class="num-btn" onclick="pinTap('3')">3</button>
-        <button class="num-btn" onclick="pinTap('4')">4</button>
-        <button class="num-btn" onclick="pinTap('5')">5</button>
-        <button class="num-btn" onclick="pinTap('6')">6</button>
-        <button class="num-btn" onclick="pinTap('7')">7</button>
-        <button class="num-btn" onclick="pinTap('8')">8</button>
-        <button class="num-btn" onclick="pinTap('9')">9</button>
-        <button class="num-btn ghost" onclick="pinBack()">⌫</button>
-        <button class="num-btn" onclick="pinTap('0')">0</button>
-        <button class="num-btn ghost" onclick="show('loginScreen')">←</button>
+        <button class="num-btn" onclick="pinTap('1')">1</button><button class="num-btn" onclick="pinTap('2')">2</button><button class="num-btn" onclick="pinTap('3')">3</button>
+        <button class="num-btn" onclick="pinTap('4')">4</button><button class="num-btn" onclick="pinTap('5')">5</button><button class="num-btn" onclick="pinTap('6')">6</button>
+        <button class="num-btn" onclick="pinTap('7')">7</button><button class="num-btn" onclick="pinTap('8')">8</button><button class="num-btn" onclick="pinTap('9')">9</button>
+        <button class="num-btn ghost" onclick="pinBack()">⌫</button><button class="num-btn" onclick="pinTap('0')">0</button><button class="num-btn ghost" onclick="show('loginScreen')">←</button>
       </div>
       <div class="err-msg" id="pinErr">⚠ Incorrect PIN — try again</div>
     </div>
@@ -212,30 +187,14 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
     <div class="card">
       <div class="card-title">Set Up Your Account</div>
       <div class="card-sub">You're verified as a supervisor. Set your name and create a PIN.</div>
-      <div class="field">
-        <label class="field-label">Full Name</label>
-        <input class="field-input" id="regName" type="text" placeholder="Your full name..." />
-      </div>
+      <div class="field"><label class="field-label">Full Name</label><input class="field-input" id="regName" type="text" placeholder="Your full name..." /></div>
       <div class="card-sub" style="margin-top:0">Choose a 4-digit PIN:</div>
-      <div class="pin-row">
-        <div class="pin-dot" id="rp0"></div>
-        <div class="pin-dot" id="rp1"></div>
-        <div class="pin-dot" id="rp2"></div>
-        <div class="pin-dot" id="rp3"></div>
-      </div>
+      <div class="pin-row"><div class="pin-dot" id="rp0"></div><div class="pin-dot" id="rp1"></div><div class="pin-dot" id="rp2"></div><div class="pin-dot" id="rp3"></div></div>
       <div class="numpad">
-        <button class="num-btn" onclick="regPinTap('1')">1</button>
-        <button class="num-btn" onclick="regPinTap('2')">2</button>
-        <button class="num-btn" onclick="regPinTap('3')">3</button>
-        <button class="num-btn" onclick="regPinTap('4')">4</button>
-        <button class="num-btn" onclick="regPinTap('5')">5</button>
-        <button class="num-btn" onclick="regPinTap('6')">6</button>
-        <button class="num-btn" onclick="regPinTap('7')">7</button>
-        <button class="num-btn" onclick="regPinTap('8')">8</button>
-        <button class="num-btn" onclick="regPinTap('9')">9</button>
-        <button class="num-btn ghost" onclick="regPinBack()">⌫</button>
-        <button class="num-btn" onclick="regPinTap('0')">0</button>
-        <button class="num-btn ghost"></button>
+        <button class="num-btn" onclick="regPinTap('1')">1</button><button class="num-btn" onclick="regPinTap('2')">2</button><button class="num-btn" onclick="regPinTap('3')">3</button>
+        <button class="num-btn" onclick="regPinTap('4')">4</button><button class="num-btn" onclick="regPinTap('5')">5</button><button class="num-btn" onclick="regPinTap('6')">6</button>
+        <button class="num-btn" onclick="regPinTap('7')">7</button><button class="num-btn" onclick="regPinTap('8')">8</button><button class="num-btn" onclick="regPinTap('9')">9</button>
+        <button class="num-btn ghost" onclick="regPinBack()">⌫</button><button class="num-btn" onclick="regPinTap('0')">0</button><button class="num-btn ghost"></button>
       </div>
     </div>
   </div>
@@ -254,15 +213,15 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
   </div>
   <div class="tabs">
     <button class="tab active" onclick="switchTab('live',this)">🟢 Live</button>
+    <button class="tab" onclick="switchTab('schedule',this)">📅 Schedule</button>
     <button class="tab" onclick="switchTab('shifts',this)">📋 Shifts</button>
     <button class="tab" onclick="switchTab('sites',this)">📍 Sites</button>
     <button class="tab" onclick="switchTab('guards',this)">👥 Guards</button>
+    <button class="tab" onclick="switchTab('settings',this)">⚙️ Settings</button>
   </div>
+
   <div class="tab-panel active" id="tab-live">
-    <div class="live-header">
-      <div class="live-title">Live View</div>
-      <div class="live-ticker" id="liveTicker">—</div>
-    </div>
+    <div class="live-header"><div class="live-title">Live View</div><div class="live-ticker" id="liveTicker">—</div></div>
     <div class="stat-row">
       <div class="stat-box"><div class="stat-val green" id="statOnDuty">0</div><div class="stat-key">On Duty</div></div>
       <div class="stat-box"><div class="stat-val" id="statOffDuty">0</div><div class="stat-key">Off Duty</div></div>
@@ -273,6 +232,20 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
     <div class="section-label">Off Duty</div>
     <div id="offDutyList"><div class="empty-state">No guards registered yet</div></div>
   </div>
+
+  <div class="tab-panel" id="tab-schedule">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:18px;font-weight:800">Schedule</div>
+      <button class="btn-sm green" onclick="openAddShiftModal()">+ Add Shift</button>
+    </div>
+    <div class="date-nav">
+      <button class="date-nav-btn" onclick="changeSchedDate(-1)">←</button>
+      <div class="date-display" id="schedDateDisplay">—</div>
+      <button class="date-nav-btn" onclick="changeSchedDate(1)">→</button>
+    </div>
+    <div id="schedList"><div class="empty-state">No shifts scheduled for this day.</div></div>
+  </div>
+
   <div class="tab-panel" id="tab-shifts">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
       <div style="font-size:18px;font-weight:800">Shift Records</div>
@@ -281,23 +254,16 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
     <div class="filter-row">
       <input class="filter-input" id="filterGuard" placeholder="Filter by guard name..." oninput="filterShifts()" />
       <input class="filter-input" id="filterDate" type="date" oninput="filterShifts()" style="max-width:160px" />
-      <select class="filter-select" id="filterSite" onchange="filterShifts()">
-        <option value="">All Sites</option>
-      </select>
+      <select class="filter-select" id="filterSite" onchange="filterShifts()"><option value="">All Sites</option></select>
     </div>
     <div class="table-wrap">
       <table class="shifts-table">
-        <thead>
-          <tr>
-            <th>Guard</th><th>Site</th><th>Date</th><th>Clock In</th><th>Clock Out</th><th>Hours</th><th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="shiftsTableBody">
-          <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;font-family:var(--mono);font-size:11px">Loading shifts...</td></tr>
-        </tbody>
+        <thead><tr><th>Guard</th><th>Site</th><th>Date</th><th>Clock In</th><th>Clock Out</th><th>Hours</th><th>Status</th></tr></thead>
+        <tbody id="shiftsTableBody"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;font-family:var(--mono);font-size:11px">Loading shifts...</td></tr></tbody>
       </table>
     </div>
   </div>
+
   <div class="tab-panel" id="tab-sites">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
       <div style="font-size:18px;font-weight:800">Sites</div>
@@ -319,57 +285,92 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
     </div>
     <div id="sitesList"></div>
   </div>
+
   <div class="tab-panel" id="tab-guards">
     <div style="font-size:18px;font-weight:800;margin-bottom:16px">All Guards</div>
     <div id="guardsList"></div>
   </div>
-</div>
 
-<div class="modal-overlay" id="resetModal">
-  <div class="modal">
-    <div class="modal-title">Reset PIN</div>
-    <div style="font-family:var(--mono);font-size:11px;color:var(--muted)" id="resetModalName">—</div>
-    <div class="field">
-      <label class="field-label">New PIN (4 digits)</label>
-      <input class="field-input" id="resetPinInput" type="tel" maxlength="4" inputmode="numeric" placeholder="Enter new PIN..." />
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-accent" onclick="confirmResetPin()" style="flex:1">Reset PIN</button>
-      <button class="btn btn-ghost" onclick="closeModal()" style="flex:1">Cancel</button>
+  <div class="tab-panel" id="tab-settings">
+    <div style="font-size:18px;font-weight:800;margin-bottom:6px">Alert Settings</div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:24px">Get a text when a guard doesn't clock in on time.</div>
+    <div class="table-wrap" style="padding:20px;max-width:480px">
+      <div class="field">
+        <label class="field-label">Supervisor Phone Number</label>
+        <input class="field-input" id="settingsPhone" type="tel" placeholder="+1 (555) 000-0000" style="font-size:14px" />
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:4px">Include country code, e.g. +12125551234</div>
+      </div>
+      <div class="field" style="margin-top:16px">
+        <label class="field-label">Grace Period (minutes)</label>
+        <input class="field-input" id="settingsGrace" type="number" min="1" max="60" placeholder="15" style="font-size:14px" />
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:4px">Alert fires this many minutes after shift start if guard hasn't clocked in.</div>
+      </div>
+      <div style="margin-top:20px;display:flex;gap:10px;align-items:center">
+        <button class="btn btn-accent" onclick="saveAlertSettings()" style="flex:1">Save Settings</button>
+        <div id="settingsSaved" style="font-family:var(--mono);font-size:11px;color:#4caf50;display:none">✓ Saved</div>
+      </div>
     </div>
   </div>
 </div>
 
-<div class="loading-overlay" id="loader">
-  <div class="spinner"></div>
-  <div class="loading-text" id="loaderText">Loading...</div>
+<!-- Reset PIN Modal -->
+<div class="modal-overlay" id="resetModal">
+  <div class="modal">
+    <div class="modal-title">Reset PIN</div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--muted)" id="resetModalName">—</div>
+    <div class="field"><label class="field-label">New PIN (4 digits)</label><input class="field-input" id="resetPinInput" type="tel" maxlength="4" inputmode="numeric" placeholder="Enter new PIN..." /></div>
+    <div class="modal-actions">
+      <button class="btn btn-accent" onclick="confirmResetPin()" style="flex:1">Reset PIN</button>
+      <button class="btn btn-ghost" onclick="closeModal('resetModal')" style="flex:1">Cancel</button>
+    </div>
+  </div>
 </div>
+
+<!-- Add Scheduled Shift Modal -->
+<div class="modal-overlay" id="addShiftModal">
+  <div class="modal">
+    <div class="modal-title">Schedule a Shift</div>
+    <div class="field"><label class="field-label">Guard</label><select class="field-input" id="schedGuardSelect" style="font-size:13px"></select></div>
+    <div class="field"><label class="field-label">Site</label><select class="field-input" id="schedSiteSelect" style="font-size:13px"></select></div>
+    <div class="field"><label class="field-label">Date</label><input class="field-input" id="schedDate" type="date" /></div>
+    <div class="form-grid">
+      <div class="field"><label class="field-label">Start Time</label><input class="field-input" id="schedStart" type="time" /></div>
+      <div class="field"><label class="field-label">End Time</label><input class="field-input" id="schedEnd" type="time" /></div>
+    </div>
+    <div class="field"><label class="field-label">Notes (optional)</label><input class="field-input" id="schedNotes" type="text" placeholder="e.g. Cover for James..." style="font-size:13px" /></div>
+    <div class="modal-actions">
+      <button class="btn btn-green" onclick="saveScheduledShift()" style="flex:1">Save Shift</button>
+      <button class="btn btn-ghost" onclick="closeModal('addShiftModal')" style="flex:1">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loader"><div class="spinner"></div><div class="loading-text" id="loaderText">Loading...</div></div>
 <div class="toast" id="toast"></div>
 
 <script>
 const SUPABASE_URL='https://zxnsqorwixmaazuovwvg.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4bnNxb3J3aXhtYWF6dW92d3ZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxNjE5OTMsImV4cCI6MjA4NzczNzk5M30.pTt0WqKR-6i54gT-nhgv1wru7Y0KvfG1A1GdRkmCAEc';
 
-// ── SHA-256 PIN hashing ──────────────────────────────────────────────────────
-async function hashPin(pin) {
-  const msgBuffer = new TextEncoder().encode(pin);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
-// ────────────────────────────────────────────────────────────────────────────
+async function hashPin(pin){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pin));return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');}
 
 const db={async query(table,method='GET',body=null,filter=''){const res=await fetch(`${SUPABASE_URL}/rest/v1/${table}${filter}`,{method,headers:{'apikey':SUPABASE_ANON,'Authorization':`Bearer ${SUPABASE_ANON}`,'Content-Type':'application/json','Prefer':method==='POST'?'return=representation':method==='PATCH'?'return=representation':''},body:body?JSON.stringify(body):null});if(!res.ok)throw new Error(await res.text());if(method==='DELETE')return null;const text=await res.text();return text?JSON.parse(text):null;}};
+
 let currentSup=JSON.parse(localStorage.getItem('td_sup')||'null');
 let currentCompany=JSON.parse(localStorage.getItem('td_sup_company')||'null');
-let loginEmpId='',loginCompany=null,pinEntry='',regPin='',allShifts=[],allGuards=[],liveTimer=null,selectedGuardForReset=null;
+let loginEmpId='',loginCompany=null,pinEntry='',regPin='',allShifts=[],allGuards=[],allSites=[],liveTimer=null,selectedGuardForReset=null;
+let schedViewDate=new Date();
+
 const pad=n=>String(n).padStart(2,'0');
 function fmtTime(ts){const d=new Date(ts);let h=d.getHours(),m=d.getMinutes();const ap=h>=12?'PM':'AM';h=h%12||12;return `${h}:${pad(m)} ${ap}`;}
+function fmt24(t){const[h,m]=t.split(':');let hh=parseInt(h);const ap=hh>=12?'PM':'AM';hh=hh%12||12;return `${hh}:${m} ${ap}`;}
 function fmtDate(ts){return new Date(ts).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});}
+function fmtISO(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;}
 function fmtDur(ms){const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60);return `${h}:${pad(m)}`;}
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
 function loading(v,text='Loading...'){document.getElementById('loaderText').textContent=text;document.getElementById('loader').classList.toggle('show',v);}
 function toast(msg,type='success'){const t=document.getElementById('toast');t.textContent=msg;t.className=`toast ${type}`;setTimeout(()=>t.classList.add('show'),10);setTimeout(()=>t.classList.remove('show'),3500);}
+function closeModal(id){document.getElementById(id).classList.remove('open');if(id==='resetModal')selectedGuardForReset=null;}
 
 async function loginStep2(){
   const empId=document.getElementById('loginEmpId').value.trim(),code=document.getElementById('loginCompanyCode').value.trim().toUpperCase();
@@ -387,83 +388,182 @@ async function loginStep2(){
       if(guard.role!=='supervisor'){await db.query('guards','PATCH',{role:'supervisor',company:loginCompany.name},`?id=eq.${guard.id}`);}
       document.getElementById('pinWelcome').textContent=`Welcome, ${guard.name||'Supervisor'} · ID ${empId}`;
       pinEntry='';updateLoginDots();document.getElementById('pinErr').style.display='none';
-      currentSup={...guard,role:'supervisor'};
-      show('pinScreen');
+      currentSup={...guard,role:'supervisor'};show('pinScreen');
     }else{show('registerScreen');}
   }catch(e){loading(false);toast('⚠ Could not verify. Try again.','error');}
 }
 
 function pinTap(n){if(pinEntry.length>=4)return;pinEntry+=n;updateLoginDots();if(pinEntry.length===4)setTimeout(checkLoginPin,150);}
 function pinBack(){pinEntry=pinEntry.slice(0,-1);updateLoginDots();}
-function updateLoginDots(){for(let i=0;i<4;i++){const d=document.getElementById('ld'+i);d.className='pin-dot'+(i<pinEntry.length?' filled':'');}}
+function updateLoginDots(){for(let i=0;i<4;i++){document.getElementById('ld'+i).className='pin-dot'+(i<pinEntry.length?' filled':'');}}
 
 async function checkLoginPin(){
-  // Hash the entered PIN and compare to stored hash
-  const enteredHash = await hashPin(pinEntry);
-  if(enteredHash !== currentSup.pin){
+  const h=await hashPin(pinEntry);
+  if(h!==currentSup.pin){
     for(let i=0;i<4;i++)document.getElementById('ld'+i).className='pin-dot error';
     document.getElementById('pinErr').style.display='block';
-    setTimeout(()=>{pinEntry='';updateLoginDots();},900);
-    return;
+    setTimeout(()=>{pinEntry='';updateLoginDots();},900);return;
   }
   document.getElementById('pinErr').style.display='none';
   localStorage.setItem('td_sup',JSON.stringify(currentSup));
   localStorage.setItem('td_sup_company',JSON.stringify(loginCompany));
-  currentCompany=loginCompany;
-  enterDashboard();
+  currentCompany=loginCompany;enterDashboard();
 }
 
 function regPinTap(n){if(regPin.length>=4)return;regPin+=n;updateRegDots();if(regPin.length===4)setTimeout(completeRegister,200);}
 function regPinBack(){regPin=regPin.slice(0,-1);updateRegDots();}
-function updateRegDots(){for(let i=0;i<4;i++){const d=document.getElementById('rp'+i);d.className='pin-dot'+(i<regPin.length?' filled':'');}}
+function updateRegDots(){for(let i=0;i<4;i++){document.getElementById('rp'+i).className='pin-dot'+(i<regPin.length?' filled':'');}}
 
 async function completeRegister(){
   const name=document.getElementById('regName').value.trim();
   if(!name){toast('⚠ Enter your full name','warn');regPin='';updateRegDots();return;}
   loading(true,'Creating account...');
   try{
-    // Hash the PIN before storing
-    const pinHash = await hashPin(regPin);
+    const pinHash=await hashPin(regPin);
     const result=await db.query('guards','POST',{employee_id:loginEmpId,pin:pinHash,name,company:loginCompany.name,role:'supervisor'});
     currentSup=result[0];
     localStorage.setItem('td_sup',JSON.stringify(currentSup));
     localStorage.setItem('td_sup_company',JSON.stringify(loginCompany));
-    currentCompany=loginCompany;
-    loading(false);enterDashboard();
+    currentCompany=loginCompany;loading(false);enterDashboard();
   }catch(e){loading(false);toast('⚠ Could not create account','error');regPin='';updateRegDots();}
 }
 
 function logout(){localStorage.removeItem('td_sup');localStorage.removeItem('td_sup_company');currentSup=null;currentCompany=null;clearInterval(liveTimer);show('loginScreen');}
-function enterDashboard(){document.getElementById('navSupName').textContent=currentSup.name||`Supervisor ${currentSup.employee_id}`;show('dashScreen');loadLive();loadShifts();loadSites();loadGuards();clearInterval(liveTimer);liveTimer=setInterval(loadLive,30000);}
-function switchTab(tab,el){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));el.classList.add('active');document.getElementById('tab-'+tab).classList.add('active');}
-async function loadLive(){try{const[guards,shifts]=await Promise.all([db.query('guards','GET',null,`?company=eq.${currentCompany.name}&role=eq.guard`),db.query('shifts','GET',null,`?company=eq.${currentCompany.name}&clock_out=is.null&order=clock_in.desc`)]);const activeShiftMap={};(shifts||[]).forEach(s=>{activeShiftMap[s.guard_id]=s;});const onDuty=(guards||[]).filter(g=>activeShiftMap[g.id]),offDuty=(guards||[]).filter(g=>!activeShiftMap[g.id]);document.getElementById('statOnDuty').textContent=onDuty.length;document.getElementById('statOffDuty').textContent=offDuty.length;const sites=await db.query('sites','GET',null,`?company=eq.${currentCompany.name}`);document.getElementById('statSites').textContent=(sites||[]).length;const now=new Date();document.getElementById('liveTicker').textContent=`Updated ${now.getHours()%12||12}:${pad(now.getMinutes())} ${now.getHours()>=12?'PM':'AM'}`;const onList=document.getElementById('onDutyList');if(!onDuty.length){onList.innerHTML='<div class="empty-state">No guards currently on duty</div>';}else{onList.innerHTML=onDuty.map(g=>{const shift=activeShiftMap[g.id],ms=Date.now()-new Date(shift.clock_in).getTime();return`<div class="guard-card on"><div><div class="guard-name">${g.name||'Guard '+g.employee_id}</div><div class="guard-meta">ID ${g.employee_id} · ${shift.site_name} · IN ${fmtTime(new Date(shift.clock_in))}</div></div><div class="guard-status"><div class="status-pill on"><div class="s-dot"></div>On Duty</div><div class="guard-elapsed">${fmtDur(ms)}</div></div></div>`;}).join('');}const offList=document.getElementById('offDutyList');if(!offDuty.length){offList.innerHTML='<div class="empty-state">No off-duty guards</div>';}else{offList.innerHTML=offDuty.map(g=>`<div class="guard-card"><div><div class="guard-name">${g.name||'Guard '+g.employee_id}</div><div class="guard-meta">ID ${g.employee_id}</div></div><div class="status-pill off"><div class="s-dot"></div>Off Duty</div></div>`).join('');}}catch(e){console.log('Live load error',e);}}
+
+function enterDashboard(){
+  document.getElementById('navSupName').textContent=currentSup.name||`Supervisor ${currentSup.employee_id}`;
+  show('dashScreen');loadLive();loadShifts();loadSites();loadGuards();
+  schedViewDate=new Date();renderSchedDate();
+  clearInterval(liveTimer);liveTimer=setInterval(loadLive,30000);
+}
+
+function switchTab(tab,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');document.getElementById('tab-'+tab).classList.add('active');
+  if(tab==='schedule')loadSchedule();
+  if(tab==='settings')loadAlertSettings();
+}
+
+async function loadLive(){try{const[guards,shifts]=await Promise.all([db.query('guards','GET',null,`?company=eq.${currentCompany.name}&role=eq.guard`),db.query('shifts','GET',null,`?company=eq.${currentCompany.name}&clock_out=is.null&order=clock_in.desc`)]);const map={};(shifts||[]).forEach(s=>{map[s.guard_id]=s;});const on=(guards||[]).filter(g=>map[g.id]),off=(guards||[]).filter(g=>!map[g.id]);document.getElementById('statOnDuty').textContent=on.length;document.getElementById('statOffDuty').textContent=off.length;const sites=await db.query('sites','GET',null,`?company=eq.${currentCompany.name}`);document.getElementById('statSites').textContent=(sites||[]).length;const now=new Date();document.getElementById('liveTicker').textContent=`Updated ${now.getHours()%12||12}:${pad(now.getMinutes())} ${now.getHours()>=12?'PM':'AM'}`;const onList=document.getElementById('onDutyList');if(!on.length){onList.innerHTML='<div class="empty-state">No guards currently on duty</div>';}else{onList.innerHTML=on.map(g=>{const s=map[g.id],ms=Date.now()-new Date(s.clock_in).getTime();return`<div class="guard-card on"><div><div class="guard-name">${g.name||'Guard '+g.employee_id}</div><div class="guard-meta">ID ${g.employee_id} · ${s.site_name} · IN ${fmtTime(new Date(s.clock_in))}</div></div><div class="guard-status"><div class="status-pill on"><div class="s-dot"></div>On Duty</div><div class="guard-elapsed">${fmtDur(ms)}</div></div></div>`;}).join('');}const offList=document.getElementById('offDutyList');if(!off.length){offList.innerHTML='<div class="empty-state">No off-duty guards</div>';}else{offList.innerHTML=off.map(g=>`<div class="guard-card"><div><div class="guard-name">${g.name||'Guard '+g.employee_id}</div><div class="guard-meta">ID ${g.employee_id}</div></div><div class="status-pill off"><div class="s-dot"></div>Off Duty</div></div>`).join('');}}catch(e){console.log('Live load error',e);}}
+
 async function loadShifts(){try{const shifts=await db.query('shifts','GET',null,`?company=eq.${currentCompany.name}&order=clock_in.desc&limit=200`);allShifts=shifts||[];renderShiftsTable(allShifts);const sites=[...new Set(allShifts.map(s=>s.site_name))];const sel=document.getElementById('filterSite');sel.innerHTML='<option value="">All Sites</option>'+sites.map(s=>`<option value="${s}">${s}</option>`).join('');}catch(e){console.log('Shifts load error',e);}}
-function filterShifts(){const name=document.getElementById('filterGuard').value.toLowerCase(),date=document.getElementById('filterDate').value,site=document.getElementById('filterSite').value;let filtered=allShifts;if(name)filtered=filtered.filter(s=>(s.guard_name||'').toLowerCase().includes(name));if(date)filtered=filtered.filter(s=>s.clock_in.startsWith(date));if(site)filtered=filtered.filter(s=>s.site_name===site);renderShiftsTable(filtered);}
+function filterShifts(){const name=document.getElementById('filterGuard').value.toLowerCase(),date=document.getElementById('filterDate').value,site=document.getElementById('filterSite').value;let f=allShifts;if(name)f=f.filter(s=>(s.guard_name||'').toLowerCase().includes(name));if(date)f=f.filter(s=>s.clock_in.startsWith(date));if(site)f=f.filter(s=>s.site_name===site);renderShiftsTable(f);}
 function renderShiftsTable(shifts){const tbody=document.getElementById('shiftsTableBody');if(!shifts.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;font-family:var(--mono);font-size:11px">No shifts found</td></tr>';return;}tbody.innerHTML=shifts.map(s=>{const active=!s.clock_out,dur=active?Date.now()-new Date(s.clock_in).getTime():s.duration_minutes*60000;return`<tr><td style="font-weight:700">${s.guard_name||'—'}</td><td>${s.site_name||'—'}</td><td>${fmtDate(new Date(s.clock_in))}</td><td>${fmtTime(new Date(s.clock_in))}</td><td>${active?'<span style="color:var(--green)">Active</span>':fmtTime(new Date(s.clock_out))}</td><td>${fmtDur(dur)}</td><td>${active?'<span class="shift-active-badge">ON DUTY</span>':'<span style="color:var(--muted);font-size:9px;letter-spacing:1px">COMPLETE</span>'}</td></tr>`;}).join('');}
-function exportCSV(){const name=document.getElementById('filterGuard').value.toLowerCase(),date=document.getElementById('filterDate').value,site=document.getElementById('filterSite').value;let filtered=allShifts;if(name)filtered=filtered.filter(s=>(s.guard_name||'').toLowerCase().includes(name));if(date)filtered=filtered.filter(s=>s.clock_in.startsWith(date));if(site)filtered=filtered.filter(s=>s.site_name===site);const rows=[['Guard Name','Employee ID','Site','Date','Clock In','Clock Out','Hours']];filtered.forEach(s=>{const dur=s.clock_out?fmtDur(s.duration_minutes*60000):'Active';rows.push([s.guard_name||'',s.guard_id||'',s.site_name||'',fmtDate(new Date(s.clock_in)),fmtTime(new Date(s.clock_in)),s.clock_out?fmtTime(new Date(s.clock_out)):'Active',dur]);});const csv=rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n'),blob=new Blob([csv],{type:'text/csv'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`timedit-shifts-${new Date().toISOString().split('T')[0]}.csv`;a.click();toast('✓ CSV exported','success');}
-async function loadSites(){try{const sites=await db.query('sites','GET',null,`?company=eq.${currentCompany.name}&order=created_at.desc`);const list=document.getElementById('sitesList');if(!sites||!sites.length){list.innerHTML='<div class="empty-state">No sites yet.<br>Add your first site above.</div>';return;}list.innerHTML=sites.map(s=>`<div class="site-card"><div class="site-name">${s.name}</div><div class="site-meta">${s.site_number||'No site number'} · GPS: ${s.latitude}, ${s.longitude} · Radius: ${s.geo_radius_meters}m</div><div class="site-actions"><button class="btn-sm green" onclick="generateQR('${s.id}','${s.name}','${s.site_number||''}')">⊡ QR Code</button></div></div>`).join('');}catch(e){console.log('Sites load error',e);}}
+function exportCSV(){const name=document.getElementById('filterGuard').value.toLowerCase(),date=document.getElementById('filterDate').value,site=document.getElementById('filterSite').value;let f=allShifts;if(name)f=f.filter(s=>(s.guard_name||'').toLowerCase().includes(name));if(date)f=f.filter(s=>s.clock_in.startsWith(date));if(site)f=f.filter(s=>s.site_name===site);const rows=[['Guard Name','Employee ID','Site','Date','Clock In','Clock Out','Hours']];f.forEach(s=>{const dur=s.clock_out?fmtDur(s.duration_minutes*60000):'Active';rows.push([s.guard_name||'',s.guard_id||'',s.site_name||'',fmtDate(new Date(s.clock_in)),fmtTime(new Date(s.clock_in)),s.clock_out?fmtTime(new Date(s.clock_out)):'Active',dur]);});const csv=rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n'),blob=new Blob([csv],{type:'text/csv'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`timedit-shifts-${new Date().toISOString().split('T')[0]}.csv`;a.click();toast('✓ CSV exported','success');}
+
+async function loadSites(){try{const sites=await db.query('sites','GET',null,`?company=eq.${currentCompany.name}&order=created_at.desc`);allSites=sites||[];const list=document.getElementById('sitesList');if(!allSites.length){list.innerHTML='<div class="empty-state">No sites yet.<br>Add your first site above.</div>';return;}list.innerHTML=allSites.map(s=>`<div class="site-card"><div class="site-name">${s.name}</div><div class="site-meta">${s.site_number||'No site number'} · GPS: ${s.latitude}, ${s.longitude} · Radius: ${s.geo_radius_meters}m</div><div class="site-actions"><button class="btn-sm green" onclick="generateQR('${s.id}','${s.name}','${s.site_number||''}')">⊡ QR Code</button></div></div>`).join('');}catch(e){console.log('Sites load error',e);}}
 function toggleAddSite(){document.getElementById('addSiteForm').classList.toggle('open');}
 async function addSite(){const name=document.getElementById('newSiteName').value.trim(),num=document.getElementById('newSiteNum').value.trim(),lat=parseFloat(document.getElementById('newSiteLat').value),lng=parseFloat(document.getElementById('newSiteLng').value),radius=parseInt(document.getElementById('newSiteRadius').value)||100;if(!name||isNaN(lat)||isNaN(lng)){toast('⚠ Fill in all required fields','warn');return;}loading(true,'Adding site...');try{await db.query('sites','POST',{name,site_number:num,latitude:lat,longitude:lng,geo_radius_meters:radius,company:currentCompany.name});loading(false);toast('✓ Site added','success');document.getElementById('addSiteForm').classList.remove('open');['newSiteName','newSiteNum','newSiteLat','newSiteLng'].forEach(id=>document.getElementById(id).value='');document.getElementById('newSiteRadius').value='100';loadSites();}catch(e){loading(false);toast('⚠ Could not add site','error');}}
 function generateQR(siteId,siteName,siteNum){const url=`https://timedit.app?site=${siteId}`;const win=window.open('','_blank');win.document.write(`<!DOCTYPE html><html><head><title>QR - ${siteName}</title><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script><style>body{font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:#fff;gap:16px;padding:32px}h1{font-size:24px;font-weight:800;margin:0}.sub{font-size:12px;color:#666;letter-spacing:2px;text-transform:uppercase}.hint{font-size:11px;color:#999;text-align:center;max-width:220px;line-height:1.6}button{background:#3B82F6;color:#fff;border:none;padding:12px 24px;font-size:14px;font-weight:700;border-radius:8px;cursor:pointer;margin-top:8px}@media print{button{display:none}}</style></head><body><div style="font-size:28px;font-weight:800">Time<span style="color:#3B82F6">dit</span></div><div id="qr"></div><h1>${siteName}</h1><div class="sub">${siteNum}</div><div class="hint">Scan to clock in or out at this location</div><button onclick="window.print()">🖨 Print</button><script>new QRCode(document.getElementById('qr'),{text:'${url}',width:220,height:220,colorDark:'#07090C',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});<\/script></body></html>`);}
 
-async function loadGuards(){try{const guards=await db.query(‘guards’,‘GET’,null,`?company=eq.${currentCompany.name}&order=name.asc`);allGuards=guards||[];const list=document.getElementById(‘guardsList’);if(!allGuards.length){list.innerHTML=’<div class="empty-state">No guards registered yet</div>’;return;}list.innerHTML=allGuards.map(g=>`<div class="guard-row"><div><div class="guard-row-name">${g.name||'Guard '+g.employee_id}</div><div class="guard-row-meta">ID ${g.employee_id} · <span class="role-badge ${g.role||'guard'}">${g.role||'guard'}</span></div></div><div class="guard-row-actions"><button class="btn-sm" onclick="openResetPin('${g.id}','${g.name||'Guard '+g.employee_id}')">Reset PIN</button></div></div>`).join(’’);}catch(e){console.log(‘Guards load error’,e);}}
-function openResetPin(guardId,guardName){selectedGuardForReset=guardId;document.getElementById(‘resetModalName’).textContent=guardName;document.getElementById(‘resetPinInput’).value=’’;document.getElementById(‘resetModal’).classList.add(‘open’);}
-function closeModal(){document.getElementById(‘resetModal’).classList.remove(‘open’);selectedGuardForReset=null;}
+async function loadGuards(){try{const guards=await db.query('guards','GET',null,`?company=eq.${currentCompany.name}&order=name.asc`);allGuards=guards||[];const list=document.getElementById('guardsList');if(!allGuards.length){list.innerHTML='<div class="empty-state">No guards registered yet</div>';return;}list.innerHTML=allGuards.map(g=>`<div class="guard-row"><div><div class="guard-row-name">${g.name||'Guard '+g.employee_id}</div><div class="guard-row-meta">ID ${g.employee_id} · <span class="role-badge ${g.role||'guard'}">${g.role||'guard'}</span></div></div><div class="guard-row-actions"><button class="btn-sm" onclick="openResetPin('${g.id}','${g.name||'Guard '+g.employee_id}')">Reset PIN</button></div></div>`).join('');}catch(e){console.log('Guards load error',e);}}
 
+function openResetPin(guardId,guardName){selectedGuardForReset=guardId;document.getElementById('resetModalName').textContent=guardName;document.getElementById('resetPinInput').value='';document.getElementById('resetModal').classList.add('open');}
 async function confirmResetPin(){
-const newPin=document.getElementById(‘resetPinInput’).value.trim();
-if(!/^\d{4}$/.test(newPin)){toast(‘⚠ PIN must be exactly 4 digits’,‘warn’);return;}
-loading(true,‘Resetting PIN…’);
-try{
-// Hash the new PIN before storing
-const pinHash = await hashPin(newPin);
-await db.query(‘guards’,‘PATCH’,{pin:pinHash},`?id=eq.${selectedGuardForReset}`);
-loading(false);closeModal();toast(‘✓ PIN reset successfully’,‘success’);
-}catch(e){loading(false);toast(‘⚠ Could not reset PIN’,‘error’);}
+  const newPin=document.getElementById('resetPinInput').value.trim();
+  if(!/^\d{4}$/.test(newPin)){toast('⚠ PIN must be exactly 4 digits','warn');return;}
+  loading(true,'Resetting PIN...');
+  try{const pinHash=await hashPin(newPin);await db.query('guards','PATCH',{pin:pinHash},`?id=eq.${selectedGuardForReset}`);loading(false);closeModal('resetModal');toast('✓ PIN reset successfully','success');}
+  catch(e){loading(false);toast('⚠ Could not reset PIN','error');}
 }
 
-if(currentSup&&currentCompany){enterDashboard();}else{show(‘loginScreen’);}
-</script>
+// ── Schedule ──────────────────────────────────────────────────────────────────
+function renderSchedDate(){
+  const today=fmtISO(new Date()),viewing=fmtISO(schedViewDate);
+  const label=(today===viewing?'Today — ':'')+schedViewDate.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  document.getElementById('schedDateDisplay').textContent=label;
+}
+function changeSchedDate(delta){schedViewDate.setDate(schedViewDate.getDate()+delta);renderSchedDate();loadSchedule();}
 
+async function loadSchedule(){
+  const dateStr=fmtISO(schedViewDate);
+  try{
+    const scheduled=await db.query('scheduled_shifts','GET',null,`?company=eq.${currentCompany.name}&scheduled_date=eq.${dateStr}&order=start_time.asc`);
+    const list=document.getElementById('schedList');
+    if(!scheduled||!scheduled.length){list.innerHTML='<div class="empty-state">No shifts scheduled for this day.<br>Click + Add Shift to schedule one.</div>';return;}
+    const isToday=fmtISO(new Date())===dateStr;
+    list.innerHTML=scheduled.map(s=>`
+      <div class="sched-card${isToday?' today':''}">
+        <div>
+          <div class="sched-guard">${s.guard_name||'—'}</div>
+          <div class="sched-meta">📍 ${s.site_name||'—'}${s.notes?' · '+s.notes:''}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="sched-time">${fmt24(s.start_time)} – ${fmt24(s.end_time)}</div>
+          <button class="btn-sm red" style="margin-top:8px" onclick="deleteScheduledShift('${s.id}')">✕ Remove</button>
+        </div>
+      </div>`).join('');
+  }catch(e){console.log('Schedule load error',e);}
+}
+
+function openAddShiftModal(){
+  const guardSel=document.getElementById('schedGuardSelect');
+  const siteSel=document.getElementById('schedSiteSelect');
+  guardSel.innerHTML=allGuards.filter(g=>g.role==='guard').map(g=>`<option value="${g.id}" data-name="${g.name||'Guard '+g.employee_id}">${g.name||'Guard '+g.employee_id}</option>`).join('');
+  siteSel.innerHTML=allSites.map(s=>`<option value="${s.id}" data-name="${s.name}">${s.name}</option>`).join('');
+  document.getElementById('schedDate').value=fmtISO(schedViewDate);
+  document.getElementById('schedStart').value='';
+  document.getElementById('schedEnd').value='';
+  document.getElementById('schedNotes').value='';
+  document.getElementById('addShiftModal').classList.add('open');
+}
+
+async function saveScheduledShift(){
+  const gSel=document.getElementById('schedGuardSelect');
+  const sSel=document.getElementById('schedSiteSelect');
+  const guardId=gSel.value,guardName=gSel.options[gSel.selectedIndex]?.dataset.name||'';
+  const siteId=sSel.value,siteName=sSel.options[sSel.selectedIndex]?.dataset.name||'';
+  const date=document.getElementById('schedDate').value;
+  const start=document.getElementById('schedStart').value;
+  const end=document.getElementById('schedEnd').value;
+  const notes=document.getElementById('schedNotes').value.trim();
+  if(!guardId||!siteId||!date||!start||!end){toast('⚠ Fill in all required fields','warn');return;}
+  if(end<=start){toast('⚠ End time must be after start time','warn');return;}
+  loading(true,'Saving shift...');
+  try{
+    await db.query('scheduled_shifts','POST',{guard_id:guardId,guard_name:guardName,site_id:siteId,site_name:siteName,company:currentCompany.name,scheduled_date:date,start_time:start,end_time:end,notes:notes||null});
+    loading(false);closeModal('addShiftModal');toast('✓ Shift scheduled','success');
+    schedViewDate=new Date(date+'T12:00:00');renderSchedDate();loadSchedule();
+  }catch(e){loading(false);toast('⚠ Could not save shift','error');}
+}
+
+async function deleteScheduledShift(id){
+  if(!confirm('Remove this scheduled shift?'))return;
+  loading(true,'Removing...');
+  try{await db.query('scheduled_shifts','DELETE',null,`?id=eq.${id}`);loading(false);toast('✓ Shift removed','success');loadSchedule();}
+  catch(e){loading(false);toast('⚠ Could not remove shift','error');}
+}
+
+async function loadAlertSettings(){
+  try{
+    const companies=await db.query('companies','GET',null,`?id=eq.${currentCompany.id}`);
+    if(companies&&companies[0]){
+      const c=companies[0];
+      if(c.supervisor_phone)document.getElementById('settingsPhone').value=c.supervisor_phone;
+      if(c.grace_period_minutes)document.getElementById('settingsGrace').value=c.grace_period_minutes;
+    }
+  }catch(e){console.log('Settings load error',e);}
+}
+
+async function saveAlertSettings(){
+  const phone=document.getElementById('settingsPhone').value.trim();
+  const grace=parseInt(document.getElementById('settingsGrace').value)||15;
+  if(!phone){toast('⚠ Enter a phone number','warn');return;}
+  loading(true,'Saving...');
+  try{
+    await db.query('companies','PATCH',{supervisor_phone:phone,grace_period_minutes:grace},`?id=eq.${currentCompany.id}`);
+    currentCompany.supervisor_phone=phone;
+    currentCompany.grace_period_minutes=grace;
+    loading(false);
+    const saved=document.getElementById('settingsSaved');
+    saved.style.display='block';
+    setTimeout(()=>saved.style.display='none',3000);
+    toast('✓ Alert settings saved','success');
+  }catch(e){loading(false);toast('⚠ Could not save settings','error');}
+}
+
+if(currentSup&&currentCompany){enterDashboard();}else{show('loginScreen');}
+</script>
 </body>
 </html>
