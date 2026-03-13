@@ -397,6 +397,24 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
     <a href="/supervisor" style="font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:1px;text-decoration:none;border-bottom:1px solid var(--border2);padding-bottom:2px">Supervisor Login →</a>
   </div>
 </div>
+<div class="screen centered" id="landingScreen">
+  <div class="logo-wrap">
+    <div class="logo">Time<span>dit</span></div>
+    <div class="logo-sub">Guard Clock-In</div>
+  </div>
+  <div class="card" style="text-align:center;gap:20px">
+    <div style="font-size:48px">📱</div>
+    <div class="card-title">Scan Your Site QR Code</div>
+    <div class="card-sub" style="display:block">This page is for clocking in and out. To get started, scan the QR code posted at your work site — or ask your supervisor for the site link.</div>
+    <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px;font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.8">
+      ① Scan QR code at your site<br>
+      ② GPS confirms your location<br>
+      ③ Enter your 4-digit PIN<br>
+      ④ You're clocked in
+    </div>
+    <a href="/supervisor" style="font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:1px;text-decoration:none;border-bottom:1px solid var(--border2);padding-bottom:2px">Supervisor Login →</a>
+  </div>
+</div>
 <div class="loading-overlay" id="loader">
   <div class="spinner"></div>
   <div class="loading-text" id="loaderText">Loading...</div>
@@ -503,7 +521,7 @@ function tickClock(){const now=new Date();let h=now.getHours(),m=now.getMinutes(
 tickClock();setInterval(tickClock,1000);
 const urlParams=new URLSearchParams(window.location.search);
 const siteParam=urlParams.get(‘site’);
-if(siteParam){scanMode=currentShift?‘out’:‘in’;loading(true,‘Loading site…’);db.query(‘sites’,‘GET’,null,`?id=eq.${siteParam}`).then(sites=>{loading(false);if(sites&&sites.length){currentSite=sites[0];createToken(siteParam,scanMode);startGpsVerify();}else{toast(‘⚠ Site not found’,‘error’);show(‘mainScreen’);updateDashboard();}}).catch(()=>{loading(false);show(‘mainScreen’);updateDashboard();});}else if(currentGuard){show(‘mainScreen’);updateDashboard();}else{show(‘mainScreen’);toast(‘Scan a site QR code to get started’,‘warn’);}
+if(siteParam){scanMode=currentShift?‘out’:‘in’;loading(true,‘Loading site…’);db.query(‘sites’,‘GET’,null,`?id=eq.${siteParam}`).then(sites=>{loading(false);if(sites&&sites.length){currentSite=sites[0];createToken(siteParam,scanMode);startGpsVerify();}else{toast(‘⚠ Site not found’,‘error’);show(‘mainScreen’);updateDashboard();}}).catch(()=>{loading(false);show(‘mainScreen’);updateDashboard();});}else if(currentGuard){show(‘mainScreen’);updateDashboard();}else{show(‘landingScreen’);}
 </script>
 
 </body>
