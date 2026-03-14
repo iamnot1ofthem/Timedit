@@ -1,6 +1,7 @@
 {
   "rewrites": [
     { "source": "/manager", "destination": "/supervisor.html" },
+    { "source": "/supervisor", "destination": "/supervisor.html" },
     { "source": "/guard", "destination": "/guard.html" },
     { "source": "/signup", "destination": "/signup.html" },
     { "source": "/", "destination": "/home.html" }
