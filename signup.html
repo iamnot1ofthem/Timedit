@@ -100,7 +100,7 @@ nav{position:relative;z-index:10;padding:20px 40px;display:flex;align-items:cent
 
 <nav>
   <a href="/" class="nav-logo">Time<span>dit</span></a>
-  <a href="/supervisor" class="nav-login">Already have an account? Login →</a>
+  <a href="/manager" class="nav-login">Already have an account? Login →</a>
 </nav>
 
 <div class="toast" id="toast"></div>
@@ -191,7 +191,7 @@ nav{position:relative;z-index:10;padding:20px 40px;display:flex;align-items:cent
       <div class="field">
         <label class="field-label">Your Employee ID</label>
         <input class="field-input" id="empId" type="tel" placeholder="e.g. 10001" inputmode="numeric" autocomplete="off" />
-        <div class="field-hint">You'll use this to log into the supervisor dashboard</div>
+        <div class="field-hint">You'll use this to log into the manager dashboard</div>
         <div class="field-error" id="eEmpId">Please enter an employee ID (numbers only)</div>
       </div>
       <div class="field">
@@ -508,7 +508,7 @@ async function resendEmail(){
   }
 }
 
-function goToDashboard(){window.location.href='/supervisor';}
+function goToDashboard(){window.location.href="/manager";}
 
 // Enter key advances steps
 document.addEventListener('keydown',e=>{
