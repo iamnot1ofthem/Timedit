@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -101,6 +100,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
 .btn-sm:hover { border-color: var(--accent); color: var(--accent); }
 .btn-sm.green { border-color: var(--green); color: var(--green); background: var(--green-dim); }
 .btn-sm.red { border-color: var(--red); color: var(--red); background: var(--red-dim); }
+.btn-sm.blue { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
 .add-site-form { background: var(--surface); border: 1px solid var(--accent); border-radius: 12px; padding: 20px; margin-bottom: 16px; display: none; flex-direction: column; gap: 14px; }
 .add-site-form.open { display: flex; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -251,70 +251,67 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
     <div style="font-size:18px;font-weight:800;margin-bottom:4px">Payroll Export</div>
     <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:20px">Select a pay period, review hours, then export a payroll-ready file.</div>
 
-```
-<!-- Pay Period Selector -->
-<div class="table-wrap" style="padding:16px 20px;margin-bottom:16px">
-  <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end">
-    <div>
-      <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">PAY PERIOD</div>
-      <select class="filter-select" id="payPeriodPreset" onchange="applyPayPeriod()" style="font-size:12px;min-width:180px">
-        <option value="this_week">This Week</option>
-        <option value="last_week">Last Week</option>
-        <option value="this_month">This Month</option>
-        <option value="last_month">Last Month</option>
-        <option value="last_14">Last 14 Days</option>
-        <option value="custom">Custom Range</option>
-      </select>
-    </div>
-    <div id="customRangeWrap" style="display:none;gap:8px;flex-wrap:wrap;align-items:flex-end">
-      <div>
-        <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">FROM</div>
-        <input class="filter-input" id="payFrom" type="date" oninput="loadShifts()" style="max-width:150px" />
+    <!-- Pay Period Selector -->
+    <div class="table-wrap" style="padding:16px 20px;margin-bottom:16px">
+      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end">
+        <div>
+          <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">PAY PERIOD</div>
+          <select class="filter-select" id="payPeriodPreset" onchange="applyPayPeriod()" style="font-size:12px;min-width:180px">
+            <option value="this_week">This Week</option>
+            <option value="last_week">Last Week</option>
+            <option value="this_month">This Month</option>
+            <option value="last_month">Last Month</option>
+            <option value="last_14">Last 14 Days</option>
+            <option value="custom">Custom Range</option>
+          </select>
+        </div>
+        <div id="customRangeWrap" style="display:none;gap:8px;flex-wrap:wrap;align-items:flex-end">
+          <div>
+            <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">FROM</div>
+            <input class="filter-input" id="payFrom" type="date" oninput="loadShifts()" style="max-width:150px" />
+          </div>
+          <div>
+            <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">TO</div>
+            <input class="filter-input" id="payTo" type="date" oninput="loadShifts()" style="max-width:150px" />
+          </div>
+        </div>
+        <div>
+          <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">FILTER GUARD</div>
+          <input class="filter-input" id="filterGuard" placeholder="All guards..." oninput="filterShifts()" style="min-width:160px" />
+        </div>
+        <div>
+          <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">FILTER SITE</div>
+          <select class="filter-select" id="filterSite" onchange="filterShifts()"><option value="">All Sites</option></select>
+        </div>
       </div>
-      <div>
-        <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">TO</div>
-        <input class="filter-input" id="payTo" type="date" oninput="loadShifts()" style="max-width:150px" />
-      </div>
     </div>
-    <div>
-      <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">FILTER GUARD</div>
-      <input class="filter-input" id="filterGuard" placeholder="All guards..." oninput="filterShifts()" style="min-width:160px" />
+
+    <!-- Payroll Summary Cards -->
+    <div id="payrollSummaryCards" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px"></div>
+
+    <!-- Guard Summary Table -->
+    <div style="font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px">HOURS BY GUARD</div>
+    <div class="table-wrap" style="margin-bottom:16px">
+      <table class="shifts-table">
+        <thead><tr><th>Guard</th><th>Employee ID</th><th>Shifts</th><th>Regular Hrs</th><th>OT Hrs (>40)</th><th>Total Hrs</th></tr></thead>
+        <tbody id="guardSummaryBody"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px;font-family:var(--mono);font-size:11px">Loading...</td></tr></tbody>
+      </table>
     </div>
-    <div>
-      <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">FILTER SITE</div>
-      <select class="filter-select" id="filterSite" onchange="filterShifts()"><option value="">All Sites</option></select>
+
+    <!-- Export Buttons -->
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px">
+      <button class="btn-export" onclick="exportPayrollCSV()" style="flex:1;min-width:180px">⬇ Export Payroll CSV</button>
+      <button class="btn btn-ghost" onclick="exportDetailCSV()" style="flex:1;min-width:180px;font-family:var(--mono);font-size:11px">⬇ Detailed Shifts CSV</button>
     </div>
-  </div>
-</div>
 
-<!-- Payroll Summary Cards -->
-<div id="payrollSummaryCards" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px"></div>
-
-<!-- Guard Summary Table -->
-<div style="font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px">HOURS BY GUARD</div>
-<div class="table-wrap" style="margin-bottom:16px">
-  <table class="shifts-table">
-    <thead><tr><th>Guard</th><th>Employee ID</th><th>Shifts</th><th>Regular Hrs</th><th>OT Hrs (>40)</th><th>Total Hrs</th></tr></thead>
-    <tbody id="guardSummaryBody"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px;font-family:var(--mono);font-size:11px">Loading...</td></tr></tbody>
-  </table>
-</div>
-
-<!-- Export Buttons -->
-<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px">
-  <button class="btn-export" onclick="exportPayrollCSV()" style="flex:1;min-width:180px">⬇ Export Payroll CSV</button>
-  <button class="btn btn-ghost" onclick="exportDetailCSV()" style="flex:1;min-width:180px;font-family:var(--mono);font-size:11px">⬇ Detailed Shifts CSV</button>
-</div>
-
-<!-- Detailed Shifts Table -->
-<div style="font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px">ALL SHIFT RECORDS</div>
-<div class="table-wrap">
-  <table class="shifts-table">
-    <thead><tr><th>Guard</th><th>Site</th><th>Date</th><th>Clock In</th><th>Clock Out</th><th>Hours</th><th>Status</th></tr></thead>
-    <tbody id="shiftsTableBody"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;font-family:var(--mono);font-size:11px">Loading shifts...</td></tr></tbody>
-  </table>
-</div>
-```
-
+    <!-- Detailed Shifts Table -->
+    <div style="font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px">ALL SHIFT RECORDS</div>
+    <div class="table-wrap">
+      <table class="shifts-table">
+        <thead><tr><th>Guard</th><th>Site</th><th>Date</th><th>Clock In</th><th>Clock Out</th><th>Hours</th><th>Status</th></tr></thead>
+        <tbody id="shiftsTableBody"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;font-family:var(--mono);font-size:11px">Loading shifts...</td></tr></tbody>
+      </table>
+    </div>
   </div>
 
   <div class="tab-panel" id="tab-sites">
@@ -325,7 +322,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
     <div class="add-site-form" id="addSiteForm">
       <div style="font-size:16px;font-weight:700">New Site</div>
       <div class="form-grid">
-        <div class="field"><label class="field-label">Site Name</label><input class="field-input" id="newSiteName" placeholder="e.g. Downtown Office" /></div>
+        <div class="field"><label class="field-label">Site Name</label><input class="field-input" id="newSiteName" placeholder="e.g. MetLife Stadium" /></div>
         <div class="field"><label class="field-label">Site Number</label><input class="field-input" id="newSiteNum" placeholder="e.g. SITE-002" /></div>
         <div class="field"><label class="field-label">Latitude</label><input class="field-input" id="newSiteLat" placeholder="e.g. 42.3601" type="number" step="any" /></div>
         <div class="field"><label class="field-label">Longitude</label><input class="field-input" id="newSiteLng" placeholder="e.g. -71.0589" type="number" step="any" /></div>
@@ -337,6 +334,23 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
       </div>
     </div>
     <div id="sitesList"></div>
+
+    <!-- ADD ZONE FORM (hidden, shown per site) -->
+    <div class="add-site-form" id="addZoneForm" style="margin-top:12px">
+      <div style="font-size:15px;font-weight:700">Add Zone to <span id="zoneFormSiteName" style="color:var(--accent)">—</span></div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted)">Each zone gets its own QR code and GPS coordinates — e.g. Gate A, Lobby, Booth C</div>
+      <input type="hidden" id="zoneFormSiteId" />
+      <div class="form-grid">
+        <div class="field"><label class="field-label">Zone Name</label><input class="field-input" id="newZoneName" placeholder="e.g. Gate A" /></div>
+        <div class="field"><label class="field-label">Latitude</label><input class="field-input" id="newZoneLat" placeholder="e.g. 42.3601" type="number" step="any" /></div>
+        <div class="field"><label class="field-label">Longitude</label><input class="field-input" id="newZoneLng" placeholder="e.g. -71.0589" type="number" step="any" /></div>
+        <div class="field"><label class="field-label">GPS Radius (meters)</label><input class="field-input" id="newZoneRadius" placeholder="50" type="number" value="50" /></div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-green" onclick="addZone()">Save Zone</button>
+        <button class="btn btn-ghost" onclick="closeZoneForm()">Cancel</button>
+      </div>
+    </div>
   </div>
 
   <div class="tab-panel" id="tab-guards">
@@ -367,7 +381,6 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
 </div>
 
 <!-- Reset PIN Modal -->
-
 <div class="modal-overlay" id="resetModal">
   <div class="modal">
     <div class="modal-title">Reset PIN</div>
@@ -381,7 +394,6 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
 </div>
 
 <!-- Add Scheduled Shift Modal -->
-
 <div class="modal-overlay" id="addShiftModal">
   <div class="modal">
     <div class="modal-title">Schedule a Shift</div>
@@ -710,109 +722,129 @@ function exportDetailCSV(){
   toast('✓ Detailed CSV exported','success');
 }
 
-async function loadSites(){try{const sites=await db.query('sites','GET',null,`?company=eq.${currentCompany.name}&order=created_at.desc`);allSites=sites||[];const list=document.getElementById('sitesList');if(!allSites.length){list.innerHTML='<div class="empty-state">No sites yet.<br>Add your first site above.</div>';return;}list.innerHTML=allSites.map(s=>`<div class="site-card"><div class="site-name">${s.name}</div><div class="site-meta">${s.site_number||'No site number'} · GPS: ${s.latitude}, ${s.longitude} · Radius: ${s.geo_radius_meters}m</div><div class="site-actions"><button class="btn-sm green" onclick="generateQR('${s.id}','${s.name}','${s.site_number||''}')">⊡ QR Code</button></div></div>`).join('');}catch(e){console.log('Sites load error',e);}}
+async function loadSites(){try{const sites=await db.query('sites','GET',null,`?company=eq.${currentCompany.name}&order=created_at.desc`);allSites=sites||[];const list=document.getElementById('sitesList');if(!allSites.length){list.innerHTML='<div class="empty-state">No sites yet.<br>Add your first site above.</div>';return;}
+const zones=await db.query('zones','GET',null,`?company=eq.${currentCompany.name}&order=created_at.asc`);
+const zonesBySite={};(zones||[]).forEach(z=>{if(!zonesBySite[z.site_id])zonesBySite[z.site_id]=[];zonesBySite[z.site_id].push(z);});
+list.innerHTML=allSites.map(s=>{
+const siteZones=zonesBySite[s.id]||[];
+const zonesHtml=siteZones.length?`<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><div style="font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Zones (${siteZones.length})</div>${siteZones.map(z=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;margin-bottom:6px"><div><div style="font-size:13px;font-weight:700">${z.name}</div><div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:2px">${z.latitude}, ${z.longitude} · ${z.geo_radius_meters}m radius</div></div><div style="display:flex;gap:6px"><button class="btn-sm blue" onclick="generateQR('${z.id}','${s.name}','${z.name}','zone')">⊡ QR</button><button class="btn-sm red" onclick="deleteZone('${z.id}')">✕</button></div></div>`).join('')}</div>`:'<div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">No zones — add zones for large sites like stadiums, campuses, or buildings.</div>';
+return`<div class="site-card"><div class="site-name">${s.name}</div><div class="site-meta">${s.site_number||'No site number'} · GPS: ${s.latitude}, ${s.longitude} · Radius: ${s.geo_radius_meters}m</div><div class="site-actions"><button class="btn-sm green" onclick="generateQR('${s.id}','${s.name}','${s.site_number||''}','site')">⊡ Site QR</button><button class="btn-sm blue" onclick="openZoneForm('${s.id}','${s.name}')">+ Add Zone</button></div>${zonesHtml}</div>`;
+}).join('');}catch(e){console.log('Sites load error',e);}}
 function toggleAddSite(){document.getElementById('addSiteForm').classList.toggle('open');}
 async function addSite(){const name=document.getElementById('newSiteName').value.trim(),num=document.getElementById('newSiteNum').value.trim(),lat=parseFloat(document.getElementById('newSiteLat').value),lng=parseFloat(document.getElementById('newSiteLng').value),radius=parseInt(document.getElementById('newSiteRadius').value)||100;if(!name||isNaN(lat)||isNaN(lng)){toast('⚠ Fill in all required fields','warn');return;}loading(true,'Adding site...');try{await db.query('sites','POST',{name,site_number:num,latitude:lat,longitude:lng,geo_radius_meters:radius,company:currentCompany.name});loading(false);toast('✓ Site added','success');document.getElementById('addSiteForm').classList.remove('open');['newSiteName','newSiteNum','newSiteLat','newSiteLng'].forEach(id=>document.getElementById(id).value='');document.getElementById('newSiteRadius').value='100';loadSites();}catch(e){loading(false);toast('⚠ Could not add site','error');}}
-function generateQR(siteId,siteName,siteNum){const url=`https://timedit.app?site=${siteId}`;const win=window.open('','_blank');win.document.write(`<!DOCTYPE html><html><head><title>QR - ${siteName}</title><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script><style>body{font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:#fff;gap:16px;padding:32px}h1{font-size:24px;font-weight:800;margin:0}.sub{font-size:12px;color:#666;letter-spacing:2px;text-transform:uppercase}.hint{font-size:11px;color:#999;text-align:center;max-width:220px;line-height:1.6}button{background:#3B82F6;color:#fff;border:none;padding:12px 24px;font-size:14px;font-weight:700;border-radius:8px;cursor:pointer;margin-top:8px}@media print{button{display:none}}</style></head><body><div style="font-size:28px;font-weight:800">Time<span style="color:#3B82F6">dit</span></div><div id="qr"></div><h1>${siteName}</h1><div class="sub">${siteNum}</div><div class="hint">Scan to clock in or out at this location</div><button onclick="window.print()">🖨 Print</button><script>new QRCode(document.getElementById('qr'),{text:'${url}',width:220,height:220,colorDark:'#07090C',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});<\/script></body></html>`);}
+function openZoneForm(siteId,siteName){document.getElementById('zoneFormSiteId').value=siteId;document.getElementById('zoneFormSiteName').textContent=siteName;document.getElementById('addZoneForm').classList.add('open');document.getElementById('addZoneForm').scrollIntoView({behavior:'smooth'});}
+function closeZoneForm(){document.getElementById('addZoneForm').classList.remove('open');['newZoneName','newZoneLat','newZoneLng'].forEach(id=>document.getElementById(id).value='');document.getElementById('newZoneRadius').value='50';}
+async function addZone(){const siteId=document.getElementById('zoneFormSiteId').value,siteName=document.getElementById('zoneFormSiteName').textContent,name=document.getElementById('newZoneName').value.trim(),lat=parseFloat(document.getElementById('newZoneLat').value),lng=parseFloat(document.getElementById('newZoneLng').value),radius=parseInt(document.getElementById('newZoneRadius').value)||50;if(!name||isNaN(lat)||isNaN(lng)){toast('⚠ Fill in all required fields','warn');return;}loading(true,'Adding zone...');try{await db.query('zones','POST',{site_id:siteId,site_name:siteName,name,latitude:lat,longitude:lng,geo_radius_meters:radius,company:currentCompany.name});loading(false);toast(`✓ Zone "${name}" added`,'success');closeZoneForm();loadSites();}catch(e){loading(false);toast('⚠ Could not add zone','error');}}
+async function deleteZone(zoneId){if(!confirm('Delete this zone?'))return;loading(true,'Deleting...');try{await db.query('zones','DELETE',null,`?id=eq.${zoneId}`);loading(false);toast('✓ Zone deleted','success');loadSites();}catch(e){loading(false);toast('⚠ Could not delete zone','error');}}
+function generateQR(id,siteName,label,type){const url=type==='zone'?`https://timedit.app/guard?zone=${id}`:`https://timedit.app/guard?site=${id}`;const win=window.open('','_blank');win.document.write(`<!DOCTYPE html><html><head><title>QR - ${siteName}${type==='zone'?' · '+label:''}</title><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script><style>body{font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:#fff;gap:16px;padding:32px}h1{font-size:24px;font-weight:800;margin:0}.zone-badge{background:#3B82F6;color:#fff;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:100px}.sub{font-size:12px;color:#666;letter-spacing:2px;text-transform:uppercase}.hint{font-size:11px;color:#999;text-align:center;max-width:220px;line-height:1.6}button{background:#3B82F6;color:#fff;border:none;padding:12px 24px;font-size:14px;font-weight:700;border-radius:8px;cursor:pointer;margin-top:8px}@media print{button{display:none}}</style></head><body><div style="font-size:28px;font-weight:800">Time<span style="color:#3B82F6">dit</span></div><div id="qr"></div><h1>${siteName}</h1>${type==='zone'?`<div class="zone-badge">${label}</div>`:`<div class="sub">${label}</div>`}<div class="hint">Scan to clock in or out at this location</div><button onclick="window.print()">🖨 Print</button><script>new QRCode(document.getElementById('qr'),{text:'${url}',width:220,height:220,colorDark:'#07090C',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});<\/script></body></html>`);}
 
-async function loadGuards(){try{const guards=await db.query(‘guards’,‘GET’,null,`?company=eq.${currentCompany.name}&order=name.asc`);allGuards=guards||[];const list=document.getElementById(‘guardsList’);if(!allGuards.length){list.innerHTML=’<div class="empty-state">No guards registered yet</div>’;return;}list.innerHTML=allGuards.map(g=>`<div class="guard-row"><div><div class="guard-row-name">${g.name||'Guard '+g.employee_id}</div><div class="guard-row-meta">ID ${g.employee_id} · <span class="role-badge ${g.role||'guard'}">${g.role||'guard'}</span></div></div><div class="guard-row-actions"><button class="btn-sm" onclick="openResetPin('${g.id}','${g.name||'Guard '+g.employee_id}')">Reset PIN</button></div></div>`).join(’’);}catch(e){console.log(‘Guards load error’,e);}}
+async function loadGuards(){try{const guards=await db.query('guards','GET',null,`?company=eq.${currentCompany.name}&order=name.asc`);allGuards=guards||[];const list=document.getElementById('guardsList');if(!allGuards.length){list.innerHTML='<div class="empty-state">No guards registered yet</div>';return;}list.innerHTML=allGuards.map(g=>`<div class="guard-row"><div><div class="guard-row-name">${g.name||'Guard '+g.employee_id}</div><div class="guard-row-meta">ID ${g.employee_id} · <span class="role-badge ${g.role||'guard'}">${g.role||'guard'}</span></div></div><div class="guard-row-actions"><button class="btn-sm" onclick="openResetPin('${g.id}','${g.name||'Guard '+g.employee_id}')">Reset PIN</button></div></div>`).join('');}catch(e){console.log('Guards load error',e);}}
 
-function openResetPin(guardId,guardName){selectedGuardForReset=guardId;document.getElementById(‘resetModalName’).textContent=guardName;document.getElementById(‘resetPinInput’).value=’’;document.getElementById(‘resetModal’).classList.add(‘open’);}
+function openResetPin(guardId,guardName){selectedGuardForReset=guardId;document.getElementById('resetModalName').textContent=guardName;document.getElementById('resetPinInput').value='';document.getElementById('resetModal').classList.add('open');}
 async function confirmResetPin(){
-const newPin=document.getElementById(‘resetPinInput’).value.trim();
-if(!/^\d{4}$/.test(newPin)){toast(‘⚠ PIN must be exactly 4 digits’,‘warn’);return;}
-loading(true,‘Resetting PIN…’);
-try{const pinHash=await hashPin(newPin);await db.query(‘guards’,‘PATCH’,{pin:pinHash},`?id=eq.${selectedGuardForReset}`);loading(false);closeModal(‘resetModal’);toast(‘✓ PIN reset successfully’,‘success’);}
-catch(e){loading(false);toast(‘⚠ Could not reset PIN’,‘error’);}
+  const newPin=document.getElementById('resetPinInput').value.trim();
+  if(!/^\d{4}$/.test(newPin)){toast('⚠ PIN must be exactly 4 digits','warn');return;}
+  loading(true,'Resetting PIN...');
+  try{const pinHash=await hashPin(newPin);await db.query('guards','PATCH',{pin:pinHash},`?id=eq.${selectedGuardForReset}`);loading(false);closeModal('resetModal');toast('✓ PIN reset successfully','success');}
+  catch(e){loading(false);toast('⚠ Could not reset PIN','error');}
 }
 
 // ── Schedule ──────────────────────────────────────────────────────────────────
 function renderSchedDate(){
-const today=fmtISO(new Date()),viewing=fmtISO(schedViewDate);
-const label=(today===viewing?‘Today — ‘:’’)+schedViewDate.toLocaleDateString(‘en-US’,{weekday:‘long’,month:‘long’,day:‘numeric’,year:‘numeric’});
-document.getElementById(‘schedDateDisplay’).textContent=label;
+  const today=fmtISO(new Date()),viewing=fmtISO(schedViewDate);
+  const label=(today===viewing?'Today — ':'')+schedViewDate.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  document.getElementById('schedDateDisplay').textContent=label;
 }
 function changeSchedDate(delta){schedViewDate.setDate(schedViewDate.getDate()+delta);renderSchedDate();loadSchedule();}
 
 async function loadSchedule(){
-const dateStr=fmtISO(schedViewDate);
-try{
-const scheduled=await db.query(‘scheduled_shifts’,‘GET’,null,`?company=eq.${currentCompany.name}&scheduled_date=eq.${dateStr}&order=start_time.asc`);
-const list=document.getElementById(‘schedList’);
-if(!scheduled||!scheduled.length){list.innerHTML=’<div class="empty-state">No shifts scheduled for this day.<br>Click + Add Shift to schedule one.</div>’;return;}
-const isToday=fmtISO(new Date())===dateStr;
-list.innerHTML=scheduled.map(s=>` <div class="sched-card${isToday?' today':''}"> <div> <div class="sched-guard">${s.guard_name||'—'}</div> <div class="sched-meta">📍 ${s.site_name||'—'}${s.notes?' · '+s.notes:''}</div> </div> <div style="text-align:right"> <div class="sched-time">${fmt24(s.start_time)} – ${fmt24(s.end_time)}</div> <button class="btn-sm red" style="margin-top:8px" onclick="deleteScheduledShift('${s.id}')">✕ Remove</button> </div> </div>`).join(’’);
-}catch(e){console.log(‘Schedule load error’,e);}
+  const dateStr=fmtISO(schedViewDate);
+  try{
+    const scheduled=await db.query('scheduled_shifts','GET',null,`?company=eq.${currentCompany.name}&scheduled_date=eq.${dateStr}&order=start_time.asc`);
+    const list=document.getElementById('schedList');
+    if(!scheduled||!scheduled.length){list.innerHTML='<div class="empty-state">No shifts scheduled for this day.<br>Click + Add Shift to schedule one.</div>';return;}
+    const isToday=fmtISO(new Date())===dateStr;
+    list.innerHTML=scheduled.map(s=>`
+      <div class="sched-card${isToday?' today':''}">
+        <div>
+          <div class="sched-guard">${s.guard_name||'—'}</div>
+          <div class="sched-meta">📍 ${s.site_name||'—'}${s.notes?' · '+s.notes:''}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="sched-time">${fmt24(s.start_time)} – ${fmt24(s.end_time)}</div>
+          <button class="btn-sm red" style="margin-top:8px" onclick="deleteScheduledShift('${s.id}')">✕ Remove</button>
+        </div>
+      </div>`).join('');
+  }catch(e){console.log('Schedule load error',e);}
 }
 
 function openAddShiftModal(){
-const guardSel=document.getElementById(‘schedGuardSelect’);
-const siteSel=document.getElementById(‘schedSiteSelect’);
-guardSel.innerHTML=allGuards.filter(g=>g.role===‘guard’).map(g=>`<option value="${g.id}" data-name="${g.name||'Guard '+g.employee_id}">${g.name||'Guard '+g.employee_id}</option>`).join(’’);
-siteSel.innerHTML=allSites.map(s=>`<option value="${s.id}" data-name="${s.name}">${s.name}</option>`).join(’’);
-document.getElementById(‘schedDate’).value=fmtISO(schedViewDate);
-document.getElementById(‘schedStart’).value=’’;
-document.getElementById(‘schedEnd’).value=’’;
-document.getElementById(‘schedNotes’).value=’’;
-document.getElementById(‘addShiftModal’).classList.add(‘open’);
+  const guardSel=document.getElementById('schedGuardSelect');
+  const siteSel=document.getElementById('schedSiteSelect');
+  guardSel.innerHTML=allGuards.filter(g=>g.role==='guard').map(g=>`<option value="${g.id}" data-name="${g.name||'Guard '+g.employee_id}">${g.name||'Guard '+g.employee_id}</option>`).join('');
+  siteSel.innerHTML=allSites.map(s=>`<option value="${s.id}" data-name="${s.name}">${s.name}</option>`).join('');
+  document.getElementById('schedDate').value=fmtISO(schedViewDate);
+  document.getElementById('schedStart').value='';
+  document.getElementById('schedEnd').value='';
+  document.getElementById('schedNotes').value='';
+  document.getElementById('addShiftModal').classList.add('open');
 }
 
 async function saveScheduledShift(){
-const gSel=document.getElementById(‘schedGuardSelect’);
-const sSel=document.getElementById(‘schedSiteSelect’);
-const guardId=gSel.value,guardName=gSel.options[gSel.selectedIndex]?.dataset.name||’’;
-const siteId=sSel.value,siteName=sSel.options[sSel.selectedIndex]?.dataset.name||’’;
-const date=document.getElementById(‘schedDate’).value;
-const start=document.getElementById(‘schedStart’).value;
-const end=document.getElementById(‘schedEnd’).value;
-const notes=document.getElementById(‘schedNotes’).value.trim();
-if(!guardId||!siteId||!date||!start||!end){toast(‘⚠ Fill in all required fields’,‘warn’);return;}
-if(end<=start){toast(‘⚠ End time must be after start time’,‘warn’);return;}
-loading(true,‘Saving shift…’);
-try{
-await db.query(‘scheduled_shifts’,‘POST’,{guard_id:guardId,guard_name:guardName,site_id:siteId,site_name:siteName,company:currentCompany.name,scheduled_date:date,start_time:start,end_time:end,notes:notes||null});
-loading(false);closeModal(‘addShiftModal’);toast(‘✓ Shift scheduled’,‘success’);
-schedViewDate=new Date(date+‘T12:00:00’);renderSchedDate();loadSchedule();
-}catch(e){loading(false);toast(‘⚠ Could not save shift’,‘error’);}
+  const gSel=document.getElementById('schedGuardSelect');
+  const sSel=document.getElementById('schedSiteSelect');
+  const guardId=gSel.value,guardName=gSel.options[gSel.selectedIndex]?.dataset.name||'';
+  const siteId=sSel.value,siteName=sSel.options[sSel.selectedIndex]?.dataset.name||'';
+  const date=document.getElementById('schedDate').value;
+  const start=document.getElementById('schedStart').value;
+  const end=document.getElementById('schedEnd').value;
+  const notes=document.getElementById('schedNotes').value.trim();
+  if(!guardId||!siteId||!date||!start||!end){toast('⚠ Fill in all required fields','warn');return;}
+  if(end<=start){toast('⚠ End time must be after start time','warn');return;}
+  loading(true,'Saving shift...');
+  try{
+    await db.query('scheduled_shifts','POST',{guard_id:guardId,guard_name:guardName,site_id:siteId,site_name:siteName,company:currentCompany.name,scheduled_date:date,start_time:start,end_time:end,notes:notes||null});
+    loading(false);closeModal('addShiftModal');toast('✓ Shift scheduled','success');
+    schedViewDate=new Date(date+'T12:00:00');renderSchedDate();loadSchedule();
+  }catch(e){loading(false);toast('⚠ Could not save shift','error');}
 }
 
 async function deleteScheduledShift(id){
-if(!confirm(‘Remove this scheduled shift?’))return;
-loading(true,‘Removing…’);
-try{await db.query(‘scheduled_shifts’,‘DELETE’,null,`?id=eq.${id}`);loading(false);toast(‘✓ Shift removed’,‘success’);loadSchedule();}
-catch(e){loading(false);toast(‘⚠ Could not remove shift’,‘error’);}
+  if(!confirm('Remove this scheduled shift?'))return;
+  loading(true,'Removing...');
+  try{await db.query('scheduled_shifts','DELETE',null,`?id=eq.${id}`);loading(false);toast('✓ Shift removed','success');loadSchedule();}
+  catch(e){loading(false);toast('⚠ Could not remove shift','error');}
 }
 
 async function loadAlertSettings(){
-try{
-const companies=await db.query(‘companies’,‘GET’,null,`?id=eq.${currentCompany.id}`);
-if(companies&&companies[0]){
-const c=companies[0];
-if(c.supervisor_phone)document.getElementById(‘settingsPhone’).value=c.supervisor_phone;
-if(c.grace_period_minutes)document.getElementById(‘settingsGrace’).value=c.grace_period_minutes;
-}
-}catch(e){console.log(‘Settings load error’,e);}
+  try{
+    const companies=await db.query('companies','GET',null,`?id=eq.${currentCompany.id}`);
+    if(companies&&companies[0]){
+      const c=companies[0];
+      if(c.supervisor_phone)document.getElementById('settingsPhone').value=c.supervisor_phone;
+      if(c.grace_period_minutes)document.getElementById('settingsGrace').value=c.grace_period_minutes;
+    }
+  }catch(e){console.log('Settings load error',e);}
 }
 
 async function saveAlertSettings(){
-const phone=document.getElementById(‘settingsPhone’).value.trim();
-const grace=parseInt(document.getElementById(‘settingsGrace’).value)||15;
-if(!phone){toast(‘⚠ Enter a phone number’,‘warn’);return;}
-loading(true,‘Saving…’);
-try{
-await db.query(‘companies’,‘PATCH’,{supervisor_phone:phone,grace_period_minutes:grace},`?id=eq.${currentCompany.id}`);
-currentCompany.supervisor_phone=phone;
-currentCompany.grace_period_minutes=grace;
-loading(false);
-const saved=document.getElementById(‘settingsSaved’);
-saved.style.display=‘block’;
-setTimeout(()=>saved.style.display=‘none’,3000);
-toast(‘✓ Alert settings saved’,‘success’);
-}catch(e){loading(false);toast(‘⚠ Could not save settings’,‘error’);}
+  const phone=document.getElementById('settingsPhone').value.trim();
+  const grace=parseInt(document.getElementById('settingsGrace').value)||15;
+  if(!phone){toast('⚠ Enter a phone number','warn');return;}
+  loading(true,'Saving...');
+  try{
+    await db.query('companies','PATCH',{supervisor_phone:phone,grace_period_minutes:grace},`?id=eq.${currentCompany.id}`);
+    currentCompany.supervisor_phone=phone;
+    currentCompany.grace_period_minutes=grace;
+    loading(false);
+    const saved=document.getElementById('settingsSaved');
+    saved.style.display='block';
+    setTimeout(()=>saved.style.display='none',3000);
+    toast('✓ Alert settings saved','success');
+  }catch(e){loading(false);toast('⚠ Could not save settings','error');}
 }
 
-if(currentSup&&currentCompany){enterDashboard();}else{show(‘loginScreen’);}
+if(currentSup&&currentCompany){enterDashboard();}else{show('loginScreen');}
 </script>
-
 </body>
 </html>
