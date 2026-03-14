@@ -210,13 +210,12 @@ footer{position:relative;z-index:1;border-top:1px solid var(–border);padding:4
 @media(max-width:768px){
 nav{padding:16px 20px}
 .nav-links{display:none}
-.nav-btn.ghost{display:none}
 .stats-bar{grid-template-columns:1fr 1fr}
-.features-grid,.access-grid,.compare-grid,.pricing-grid,.testimonials-grid{grid-template-columns:1fr}
+.features-grid,.compare-grid,.pricing-grid{grid-template-columns:1fr}
 .steps-grid{grid-template-columns:1fr 1fr}
 .steps-grid::before{display:none}
-.section,.how-section,.problems-section,.pricing-section,.access-section,.testimonials-section,.contact-section{padding:60px 20px}
-.mockup-content{grid-template-columns:1fr}
+.section,.how-section,.problems-section,.pricing-section,.testimonials-section,.contact-section{padding:60px 20px}
+.hero-mockup{grid-template-columns:1fr!important}
 footer{grid-template-columns:1fr;text-align:center;gap:24px}
 .footer-links{justify-content:center}
 .footer-copy{text-align:center}
@@ -229,14 +228,13 @@ footer{grid-template-columns:1fr;text-align:center;gap:24px}
 <nav>
   <a href="/" class="nav-logo">Time<span>dit</span></a>
   <div class="nav-links">
-    <a href="#access">Login</a>
     <a href="#features">Features</a>
     <a href="#pricing">Pricing</a>
-    <a href="/signup">Get Started</a>
+    <a href="#contact">Contact</a>
   </div>
   <div class="nav-actions">
-    <a href="/guard" class="nav-btn ghost">Guard Clock-In</a>
-    <a href="/supervisor" class="nav-btn solid">Supervisor Login →</a>
+    <a href="/manager" class="nav-btn ghost">Login</a>
+    <a href="/signup" class="nav-btn solid">Get Started →</a>
   </div>
 </nav>
 
@@ -244,61 +242,118 @@ footer{grid-template-columns:1fr;text-align:center;gap:24px}
   <div class="hero-glow"></div>
   <div class="hero-badge"><div class="hero-badge-dot"></div>Built for security companies</div>
   <h1>Stop Time Theft.<br><span class="green">Clock In</span> with <span class="accent">Proof.</span></h1>
-  <p class="hero-sub">Timedit replaces paper timesheets with QR scanning, GPS verification, and live supervisor dashboards. Guards clock in from the site — or they don't clock in at all.</p>
+  <p class="hero-sub">Timedit replaces paper timesheets with QR scanning, GPS verification, and live manager dashboards. Guards clock in from the site — or they don't clock in at all.</p>
   <div class="hero-actions">
     <a href="/signup" class="btn-primary">→ Get Started Free</a>
     <a href="#features" class="btn-ghost">See How It Works</a>
   </div>
   <div class="hero-note">No credit card required · Setup in minutes · Cancel anytime</div>
-  <div class="hero-mockup">
-    <div class="mockup-frame">
-      <div class="mockup-bar">
-        <div class="mockup-dot"></div><div class="mockup-dot"></div><div class="mockup-dot"></div>
-        <div class="mockup-url">timedit.app/supervisor</div>
-      </div>
-      <div class="mockup-content">
-        <div class="mock-card green"><div class="mock-label">On Duty Now</div><div class="mock-val green">12</div></div>
-        <div class="mock-card"><div class="mock-label">Active Sites</div><div class="mock-val">8</div></div>
-        <div class="mock-card blue"><div class="mock-label">Hours This Week</div><div class="mock-val blue">347</div></div>
-        <div class="mock-card" style="grid-column:span 3">
-          <div class="mock-label" style="margin-bottom:12px">Live Guard Status</div>
-          <div class="mock-guard-row"><div><div class="mock-guard-name">James Carter</div><div class="mock-guard-site">Downtown HQ · IN 8:02 AM</div></div><span class="mock-pill on">On Duty</span></div>
-          <div class="mock-guard-row"><div><div class="mock-guard-name">Maria Santos</div><div class="mock-guard-site">Westside Plaza · IN 7:45 AM</div></div><span class="mock-pill on">On Duty</span></div>
-          <div class="mock-guard-row"><div><div class="mock-guard-name">Derek Mills</div><div class="mock-guard-site">North Tower</div></div><span class="mock-pill off">Off Duty</span></div>
-        </div>
+  <!-- SIDE BY SIDE MOCKUPS -->
+  <div class="hero-mockup" style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px;align-items:start">
+
+```
+<!-- Manager Dashboard -->
+<div>
+  <div style="font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;text-align:left">Manager Dashboard</div>
+  <div class="mockup-frame">
+    <div class="mockup-bar">
+      <div class="mockup-dot"></div><div class="mockup-dot"></div><div class="mockup-dot"></div>
+      <div class="mockup-url">timedit.app/supervisor</div>
+    </div>
+    <div class="mockup-content">
+      <div class="mock-card green"><div class="mock-label">On Duty Now</div><div class="mock-val green">12</div></div>
+      <div class="mock-card"><div class="mock-label">Active Sites</div><div class="mock-val">8</div></div>
+      <div class="mock-card blue"><div class="mock-label">Hours This Week</div><div class="mock-val blue">347</div></div>
+      <div class="mock-card" style="grid-column:span 3">
+        <div class="mock-label" style="margin-bottom:12px">Live Guard Status</div>
+        <div class="mock-guard-row"><div><div class="mock-guard-name">James Carter</div><div class="mock-guard-site">Downtown HQ · IN 8:02 AM</div></div><span class="mock-pill on">On Duty</span></div>
+        <div class="mock-guard-row"><div><div class="mock-guard-name">Maria Santos</div><div class="mock-guard-site">Westside Plaza · IN 7:45 AM</div></div><span class="mock-pill on">On Duty</span></div>
+        <div class="mock-guard-row"><div><div class="mock-guard-name">Derek Mills</div><div class="mock-guard-site">North Tower</div></div><span class="mock-pill off">Off Duty</span></div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- Guard Phone Animated -->
+<div>
+  <div style="font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;text-align:left">Guard Clock-In · <span id="phoneStepLabel" style="color:var(--accent)">Scan QR Code</span></div>
+  <div class="mockup-frame" style="border-radius:28px;max-width:220px;margin:0 auto;min-height:340px;position:relative;overflow:hidden">
+    <div style="background:var(--surface2);border-bottom:1px solid var(--border);justify-content:center;padding:12px;display:flex">
+      <div style="width:60px;height:6px;background:var(--border2);border-radius:100px"></div>
+    </div>
+
+    <!-- Step 1: QR Scan -->
+    <div class="phone-step" id="pstep1" style="padding:20px;display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center">
+      <div style="font-family:var(--mono);font-size:22px;margin-top:4px">⊡</div>
+      <div style="font-size:14px;font-weight:800">Scan Site QR Code</div>
+      <div style="background:var(--surface2);border:2px solid var(--accent);border-radius:12px;width:100%;padding:24px;display:flex;align-items:center;justify-content:center;position:relative">
+        <div style="font-size:32px;opacity:0.4">▦</div>
+        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--green),transparent);animation:scanLine 1.5s infinite"></div>
+      </div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--muted)">Point camera at site QR code</div>
+    </div>
+
+    <!-- Step 2: GPS -->
+    <div class="phone-step" id="pstep2" style="padding:20px;display:none;flex-direction:column;gap:12px;text-align:center">
+      <div style="font-size:13px;font-weight:800">Downtown HQ</div>
+      <div style="background:var(--green-dim);border:1px solid rgba(16,255,138,0.4);border-radius:10px;padding:14px">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--green);letter-spacing:1px">✓ GPS CONFIRMED</div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:4px">12 meters from site</div>
+      </div>
+      <div style="background:var(--green);border-radius:10px;padding:11px;font-weight:800;font-size:13px;color:#000">Continue →</div>
+    </div>
+
+    <!-- Step 3: PIN -->
+    <div class="phone-step" id="pstep3" style="padding:20px;display:none;flex-direction:column;gap:12px;text-align:center">
+      <div style="font-size:13px;font-weight:800">Enter Your PIN</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted)">James Carter · ID 10042</div>
+      <div style="display:flex;justify-content:center;gap:10px;margin:8px 0" id="pinDotsAnim">
+        <div class="panim-dot" style="width:14px;height:14px;border-radius:50%;border:2px solid var(--border2)"></div>
+        <div class="panim-dot" style="width:14px;height:14px;border-radius:50%;border:2px solid var(--border2)"></div>
+        <div class="panim-dot" style="width:14px;height:14px;border-radius:50%;border:2px solid var(--border2)"></div>
+        <div class="panim-dot" style="width:14px;height:14px;border-radius:50%;border:2px solid var(--border2)"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+        <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px;font-size:16px;font-weight:700;font-family:var(--mono)">1</div>
+        <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px;font-size:16px;font-weight:700;font-family:var(--mono)">2</div>
+        <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px;font-size:16px;font-weight:700;font-family:var(--mono)">3</div>
+        <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px;font-size:16px;font-weight:700;font-family:var(--mono)">4</div>
+        <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px;font-size:16px;font-weight:700;font-family:var(--mono)">5</div>
+        <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px;font-size:16px;font-weight:700;font-family:var(--mono)">6</div>
+      </div>
+    </div>
+
+    <!-- Step 4: Clocked In -->
+    <div class="phone-step" id="pstep4" style="padding:20px;display:none;flex-direction:column;gap:12px;text-align:center">
+      <div style="width:56px;height:56px;border-radius:50%;background:var(--green-dim);border:2px solid var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:24px">✓</div>
+      <div style="font-size:15px;font-weight:800;color:var(--green)">Clocked In!</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted)">Downtown HQ · 8:02 AM</div>
+      <div style="background:var(--green-dim);border:1px solid rgba(16,255,138,0.3);border-radius:10px;padding:12px">
+        <div style="font-family:var(--mono);font-size:9px;color:var(--green)">James Carter · On Duty</div>
+        <div style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--text);margin-top:4px" id="elapsedAnim">0:00:01</div>
+      </div>
+    </div>
+
+    <!-- Step dots -->
+    <div style="display:flex;justify-content:center;gap:6px;padding:12px 0;border-top:1px solid var(--border)">
+      <div class="pdot" id="pdot1" style="width:6px;height:6px;border-radius:50%;background:var(--accent)"></div>
+      <div class="pdot" id="pdot2" style="width:6px;height:6px;border-radius:50%;background:var(--border2)"></div>
+      <div class="pdot" id="pdot3" style="width:6px;height:6px;border-radius:50%;background:var(--border2)"></div>
+      <div class="pdot" id="pdot4" style="width:6px;height:6px;border-radius:50%;background:var(--border2)"></div>
+    </div>
+  </div>
+</div>
+```
+
   </div>
 </section>
 
 <div class="stats-bar">
   <div class="stat-item reveal"><div class="stat-num">100%</div><div class="stat-label">GPS Verified Clock-Ins</div></div>
   <div class="stat-item reveal"><div class="stat-num">0</div><div class="stat-label">Paper Timesheets</div></div>
-  <div class="stat-item reveal"><div class="stat-num">Live</div><div class="stat-label">Supervisor Dashboard</div></div>
+  <div class="stat-item reveal"><div class="stat-num">Live</div><div class="stat-label">Manager Dashboard</div></div>
   <div class="stat-item reveal"><div class="stat-num">1-Click</div><div class="stat-label">Payroll Export</div></div>
 </div>
-
-<!-- ACCESS — customers go here -->
-
-<section class="access-section" id="access">
-  <div class="section-tag reveal">App Access</div>
-  <h2 class="section-title reveal">Already a customer?<br>Jump straight in.</h2>
-  <p class="section-sub reveal">Supervisors manage the full operation from the dashboard. Guards use their phone to clock in — no app download needed.</p>
-  <div class="access-grid">
-    <div class="access-card supervisor reveal">
-      <div class="access-icon">⊞</div>
-      <div class="access-title">Supervisor Dashboard</div>
-      <div class="access-desc">Live guard status, shift scheduling, site management, SMS late alerts, payroll export, and full shift history — all in one place.</div>
-      <a href="/supervisor" class="access-btn blue">→ Supervisor Login</a>
-    </div>
-    <div class="access-card guard reveal">
-      <div class="access-icon">📱</div>
-      <div class="access-title">Guard Clock-In</div>
-      <div class="access-desc">Scan the QR code at your site, verify GPS location, enter your PIN, and clock in. Takes under 10 seconds on any phone — no app required.</div>
-      <a href="/guard" class="access-btn green">→ Guard Clock-In</a>
-    </div>
-  </div>
-</section>
 
 <!-- FEATURES -->
 
@@ -310,7 +365,7 @@ footer{grid-template-columns:1fr;text-align:center;gap:24px}
     <div class="feature-card reveal"><div class="feature-icon">⊡</div><div class="feature-title">QR Code Clock-In</div><div class="feature-desc">Each site gets a unique QR code. Guards scan it to clock in — no QR scan, no clock-in. Physical presence confirmed every time.</div></div>
     <div class="feature-card reveal"><div class="feature-icon">📍</div><div class="feature-title">GPS Radius Verification</div><div class="feature-desc">Guards must be within your defined GPS radius to clock in. If they're not at the site, the app blocks them. No exceptions.</div></div>
     <div class="feature-card reveal"><div class="feature-icon">🔐</div><div class="feature-title">PIN Authentication</div><div class="feature-desc">Every clock-in requires a personal 4-digit PIN. No buddy punching. Each entry is tied to a specific employee identity.</div></div>
-    <div class="feature-card reveal"><div class="feature-icon">🟢</div><div class="feature-title">Live Supervisor Dashboard</div><div class="feature-desc">See who's on duty, at which site, and for how long — in real time. Full view of your entire operation from one screen.</div></div>
+    <div class="feature-card reveal"><div class="feature-icon">🟢</div><div class="feature-title">Live Manager Dashboard</div><div class="feature-desc">See who's on duty, at which site, and for how long — in real time. Full view of your entire operation from one screen.</div></div>
     <div class="feature-card reveal"><div class="feature-icon">🔔</div><div class="feature-title">SMS Late Alerts</div><div class="feature-desc">Get a text when a guard hasn't clocked in by their scheduled start. Set your own grace period. Never miss a no-show again.</div></div>
     <div class="feature-card reveal"><div class="feature-icon">📋</div><div class="feature-title">Payroll-Ready Export</div><div class="feature-desc">Export any pay period with regular vs overtime hours per guard. Drop it straight into ADP, Paychex, Gusto, or any payroll provider.</div></div>
     <div class="feature-card reveal"><div class="feature-icon">📅</div><div class="feature-title">Shift Scheduling</div><div class="feature-desc">Schedule guards to specific sites in advance. Late alerts automatically check actual clock-ins against your schedule.</div></div>
@@ -327,7 +382,7 @@ footer{grid-template-columns:1fr;text-align:center;gap:24px}
     <h2 class="section-title reveal">Up and running in minutes.</h2>
     <p class="section-sub reveal">Four simple steps from setup to your first verified clock-in.</p>
     <div class="steps-grid">
-      <div class="step reveal"><div class="step-num">1</div><div class="step-title">Add Your Sites</div><div class="step-desc">Enter your site name, GPS coordinates, and radius in the supervisor dashboard. About 60 seconds per site.</div></div>
+      <div class="step reveal"><div class="step-num">1</div><div class="step-title">Add Your Sites</div><div class="step-desc">Enter your site name, GPS coordinates, and radius in the manager dashboard. About 60 seconds per site.</div></div>
       <div class="step reveal"><div class="step-num">2</div><div class="step-title">Print QR Codes</div><div class="step-desc">Generate and print a unique QR code for each site directly from the dashboard. Post it at the location.</div></div>
       <div class="step reveal"><div class="step-num">3</div><div class="step-title">Guards Scan In</div><div class="step-desc">Guards scan the QR, GPS confirms location, PIN confirms identity. Clocked in — all in under 10 seconds.</div></div>
       <div class="step reveal"><div class="step-num">4</div><div class="step-title">You See It Live</div><div class="step-desc">Monitor every guard in real time. Export payroll when you need it. Get alerted if someone doesn't show up.</div></div>
@@ -377,7 +432,7 @@ footer{grid-template-columns:1fr;text-align:center;gap:24px}
         <div class="pricing-per">per month · up to 10 guards</div>
         <div class="pricing-divider"></div>
         <div class="pricing-feature"><span class="pricing-check">✓</span>QR + GPS + PIN clock-in</div>
-        <div class="pricing-feature"><span class="pricing-check">✓</span>Live supervisor dashboard</div>
+        <div class="pricing-feature"><span class="pricing-check">✓</span>Live manager dashboard</div>
         <div class="pricing-feature"><span class="pricing-check">✓</span>Shift history & records</div>
         <div class="pricing-feature"><span class="pricing-check">✓</span>Payroll CSV export</div>
         <div class="pricing-feature"><span class="pricing-check">✓</span>Up to 3 sites</div>
@@ -447,12 +502,10 @@ footer{grid-template-columns:1fr;text-align:center;gap:24px}
     <div class="footer-tagline">Time tracking built for security companies</div>
   </div>
   <div class="footer-links">
-    <a href="#access" class="footer-link">Login</a>
     <a href="#features" class="footer-link">Features</a>
     <a href="#pricing" class="footer-link">Pricing</a>
-    <a href="/guard" class="footer-link">Guard App</a>
-    <a href="/supervisor" class="footer-link">Supervisor</a>
     <a href="#contact" class="footer-link">Contact</a>
+    <a href="/manager" class="footer-link">Login</a>
   </div>
   <div class="footer-copy">© 2026 Timedit · Built for the security industry</div>
 </footer>
@@ -460,6 +513,65 @@ footer{grid-template-columns:1fr;text-align:center;gap:24px}
 <script>
 const observer=new IntersectionObserver((entries)=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:0.1});
 document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+
+// Phone mockup animation
+const phoneSteps = ['pstep1','pstep2','pstep3','pstep4'];
+const phoneLabels = ['Scan QR Code','GPS Verified','Enter PIN','Clocked In ✓'];
+let phoneStep = 0;
+let pinFilled = 0;
+let elapsedSecs = 1;
+
+function showPhoneStep(n) {
+  phoneSteps.forEach((id,i) => {
+    const el = document.getElementById(id);
+    if(el) el.style.display = i===n ? 'flex' : 'none';
+  });
+  document.querySelectorAll('.pdot').forEach((d,i) => {
+    d.style.background = i===n ? 'var(--accent)' : 'var(--border2)';
+  });
+  const lbl = document.getElementById('phoneStepLabel');
+  if(lbl) lbl.textContent = phoneLabels[n];
+}
+
+function animatePinDots() {
+  pinFilled = 0;
+  const dots = document.querySelectorAll('.panim-dot');
+  const interval = setInterval(() => {
+    if(pinFilled < 4) {
+      dots[pinFilled].style.background = 'var(--accent)';
+      dots[pinFilled].style.borderColor = 'var(--accent)';
+      dots[pinFilled].style.boxShadow = '0 0 6px var(--accent)';
+      pinFilled++;
+    } else {
+      clearInterval(interval);
+    }
+  }, 350);
+}
+
+function animateElapsed() {
+  elapsedSecs = 1;
+  const el = document.getElementById('elapsedAnim');
+  const t = setInterval(() => {
+    if(!document.getElementById('pstep4') || document.getElementById('pstep4').style.display === 'none') { clearInterval(t); return; }
+    const h = Math.floor(elapsedSecs/3600);
+    const m = Math.floor((elapsedSecs%3600)/60);
+    const s = elapsedSecs%60;
+    if(el) el.textContent = `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    elapsedSecs++;
+  }, 1000);
+  return t;
+}
+
+let elapsedTimer2 = null;
+function nextPhoneStep() {
+  phoneStep = (phoneStep + 1) % 4;
+  showPhoneStep(phoneStep);
+  if(phoneStep === 2) animatePinDots();
+  if(phoneStep === 3) { if(elapsedTimer2) clearInterval(elapsedTimer2); elapsedTimer2 = animateElapsed(); }
+}
+
+showPhoneStep(0);
+setInterval(nextPhoneStep, 2800);
 
 async function submitForm(){
   const name=document.getElementById('name').value.trim();
