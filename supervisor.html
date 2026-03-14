@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -150,9 +151,9 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
 <div class="screen centered active" id="loginScreen" style="flex-direction:column">
   <div class="login-wrap">
     <div class="logo">Time<span>dit</span></div>
-    <div class="logo-sub">Supervisor Portal</div>
+    <div class="logo-sub">Manager Portal</div>
     <div class="card">
-      <div class="card-title">Supervisor Login</div>
+      <div class="card-title">Manager Login</div>
       <div class="card-sub">Enter your employee number and company code to continue.</div>
       <div class="field"><label class="field-label">Employee Number</label><input class="field-input" id="loginEmpId" type="tel" placeholder="Your employee number..." inputmode="numeric" /></div>
       <div class="field"><label class="field-label">Company Code</label><input class="field-input" id="loginCompanyCode" type="text" placeholder="e.g. SEC-SUP-9134..." style="text-transform:uppercase" /></div>
@@ -164,7 +165,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
 <div class="screen centered" id="pinScreen" style="flex-direction:column">
   <div class="login-wrap">
     <div class="logo">Time<span>dit</span></div>
-    <div class="logo-sub">Supervisor Portal</div>
+    <div class="logo-sub">Manager Portal</div>
     <div class="card">
       <div class="card-title">Enter PIN</div>
       <div class="card-sub" id="pinWelcome">—</div>
@@ -183,7 +184,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
 <div class="screen centered" id="registerScreen" style="flex-direction:column">
   <div class="login-wrap">
     <div class="logo">Time<span>dit</span></div>
-    <div class="logo-sub">Create Supervisor Account</div>
+    <div class="logo-sub">Create Manager Account</div>
     <div class="card">
       <div class="card-title">Set Up Your Account</div>
       <div class="card-sub">You're verified as a supervisor. Set your name and create a PIN.</div>
@@ -250,67 +251,70 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
     <div style="font-size:18px;font-weight:800;margin-bottom:4px">Payroll Export</div>
     <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:20px">Select a pay period, review hours, then export a payroll-ready file.</div>
 
-    <!-- Pay Period Selector -->
-    <div class="table-wrap" style="padding:16px 20px;margin-bottom:16px">
-      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end">
-        <div>
-          <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">PAY PERIOD</div>
-          <select class="filter-select" id="payPeriodPreset" onchange="applyPayPeriod()" style="font-size:12px;min-width:180px">
-            <option value="this_week">This Week</option>
-            <option value="last_week">Last Week</option>
-            <option value="this_month">This Month</option>
-            <option value="last_month">Last Month</option>
-            <option value="last_14">Last 14 Days</option>
-            <option value="custom">Custom Range</option>
-          </select>
-        </div>
-        <div id="customRangeWrap" style="display:none;gap:8px;flex-wrap:wrap;align-items:flex-end">
-          <div>
-            <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">FROM</div>
-            <input class="filter-input" id="payFrom" type="date" oninput="loadShifts()" style="max-width:150px" />
-          </div>
-          <div>
-            <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">TO</div>
-            <input class="filter-input" id="payTo" type="date" oninput="loadShifts()" style="max-width:150px" />
-          </div>
-        </div>
-        <div>
-          <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">FILTER GUARD</div>
-          <input class="filter-input" id="filterGuard" placeholder="All guards..." oninput="filterShifts()" style="min-width:160px" />
-        </div>
-        <div>
-          <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">FILTER SITE</div>
-          <select class="filter-select" id="filterSite" onchange="filterShifts()"><option value="">All Sites</option></select>
-        </div>
+```
+<!-- Pay Period Selector -->
+<div class="table-wrap" style="padding:16px 20px;margin-bottom:16px">
+  <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end">
+    <div>
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">PAY PERIOD</div>
+      <select class="filter-select" id="payPeriodPreset" onchange="applyPayPeriod()" style="font-size:12px;min-width:180px">
+        <option value="this_week">This Week</option>
+        <option value="last_week">Last Week</option>
+        <option value="this_month">This Month</option>
+        <option value="last_month">Last Month</option>
+        <option value="last_14">Last 14 Days</option>
+        <option value="custom">Custom Range</option>
+      </select>
+    </div>
+    <div id="customRangeWrap" style="display:none;gap:8px;flex-wrap:wrap;align-items:flex-end">
+      <div>
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">FROM</div>
+        <input class="filter-input" id="payFrom" type="date" oninput="loadShifts()" style="max-width:150px" />
+      </div>
+      <div>
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">TO</div>
+        <input class="filter-input" id="payTo" type="date" oninput="loadShifts()" style="max-width:150px" />
       </div>
     </div>
-
-    <!-- Payroll Summary Cards -->
-    <div id="payrollSummaryCards" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px"></div>
-
-    <!-- Guard Summary Table -->
-    <div style="font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px">HOURS BY GUARD</div>
-    <div class="table-wrap" style="margin-bottom:16px">
-      <table class="shifts-table">
-        <thead><tr><th>Guard</th><th>Employee ID</th><th>Shifts</th><th>Regular Hrs</th><th>OT Hrs (>40)</th><th>Total Hrs</th></tr></thead>
-        <tbody id="guardSummaryBody"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px;font-family:var(--mono);font-size:11px">Loading...</td></tr></tbody>
-      </table>
+    <div>
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">FILTER GUARD</div>
+      <input class="filter-input" id="filterGuard" placeholder="All guards..." oninput="filterShifts()" style="min-width:160px" />
     </div>
-
-    <!-- Export Buttons -->
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px">
-      <button class="btn-export" onclick="exportPayrollCSV()" style="flex:1;min-width:180px">⬇ Export Payroll CSV</button>
-      <button class="btn btn-ghost" onclick="exportDetailCSV()" style="flex:1;min-width:180px;font-family:var(--mono);font-size:11px">⬇ Detailed Shifts CSV</button>
+    <div>
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">FILTER SITE</div>
+      <select class="filter-select" id="filterSite" onchange="filterShifts()"><option value="">All Sites</option></select>
     </div>
+  </div>
+</div>
 
-    <!-- Detailed Shifts Table -->
-    <div style="font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px">ALL SHIFT RECORDS</div>
-    <div class="table-wrap">
-      <table class="shifts-table">
-        <thead><tr><th>Guard</th><th>Site</th><th>Date</th><th>Clock In</th><th>Clock Out</th><th>Hours</th><th>Status</th></tr></thead>
-        <tbody id="shiftsTableBody"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;font-family:var(--mono);font-size:11px">Loading shifts...</td></tr></tbody>
-      </table>
-    </div>
+<!-- Payroll Summary Cards -->
+<div id="payrollSummaryCards" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px"></div>
+
+<!-- Guard Summary Table -->
+<div style="font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px">HOURS BY GUARD</div>
+<div class="table-wrap" style="margin-bottom:16px">
+  <table class="shifts-table">
+    <thead><tr><th>Guard</th><th>Employee ID</th><th>Shifts</th><th>Regular Hrs</th><th>OT Hrs (>40)</th><th>Total Hrs</th></tr></thead>
+    <tbody id="guardSummaryBody"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px;font-family:var(--mono);font-size:11px">Loading...</td></tr></tbody>
+  </table>
+</div>
+
+<!-- Export Buttons -->
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px">
+  <button class="btn-export" onclick="exportPayrollCSV()" style="flex:1;min-width:180px">⬇ Export Payroll CSV</button>
+  <button class="btn btn-ghost" onclick="exportDetailCSV()" style="flex:1;min-width:180px;font-family:var(--mono);font-size:11px">⬇ Detailed Shifts CSV</button>
+</div>
+
+<!-- Detailed Shifts Table -->
+<div style="font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px">ALL SHIFT RECORDS</div>
+<div class="table-wrap">
+  <table class="shifts-table">
+    <thead><tr><th>Guard</th><th>Site</th><th>Date</th><th>Clock In</th><th>Clock Out</th><th>Hours</th><th>Status</th></tr></thead>
+    <tbody id="shiftsTableBody"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;font-family:var(--mono);font-size:11px">Loading shifts...</td></tr></tbody>
+  </table>
+</div>
+```
+
   </div>
 
   <div class="tab-panel" id="tab-sites">
@@ -363,6 +367,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
 </div>
 
 <!-- Reset PIN Modal -->
+
 <div class="modal-overlay" id="resetModal">
   <div class="modal">
     <div class="modal-title">Reset PIN</div>
@@ -376,6 +381,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
 </div>
 
 <!-- Add Scheduled Shift Modal -->
+
 <div class="modal-overlay" id="addShiftModal">
   <div class="modal">
     <div class="modal-title">Schedule a Shift</div>
@@ -709,113 +715,104 @@ function toggleAddSite(){document.getElementById('addSiteForm').classList.toggle
 async function addSite(){const name=document.getElementById('newSiteName').value.trim(),num=document.getElementById('newSiteNum').value.trim(),lat=parseFloat(document.getElementById('newSiteLat').value),lng=parseFloat(document.getElementById('newSiteLng').value),radius=parseInt(document.getElementById('newSiteRadius').value)||100;if(!name||isNaN(lat)||isNaN(lng)){toast('⚠ Fill in all required fields','warn');return;}loading(true,'Adding site...');try{await db.query('sites','POST',{name,site_number:num,latitude:lat,longitude:lng,geo_radius_meters:radius,company:currentCompany.name});loading(false);toast('✓ Site added','success');document.getElementById('addSiteForm').classList.remove('open');['newSiteName','newSiteNum','newSiteLat','newSiteLng'].forEach(id=>document.getElementById(id).value='');document.getElementById('newSiteRadius').value='100';loadSites();}catch(e){loading(false);toast('⚠ Could not add site','error');}}
 function generateQR(siteId,siteName,siteNum){const url=`https://timedit.app?site=${siteId}`;const win=window.open('','_blank');win.document.write(`<!DOCTYPE html><html><head><title>QR - ${siteName}</title><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script><style>body{font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:#fff;gap:16px;padding:32px}h1{font-size:24px;font-weight:800;margin:0}.sub{font-size:12px;color:#666;letter-spacing:2px;text-transform:uppercase}.hint{font-size:11px;color:#999;text-align:center;max-width:220px;line-height:1.6}button{background:#3B82F6;color:#fff;border:none;padding:12px 24px;font-size:14px;font-weight:700;border-radius:8px;cursor:pointer;margin-top:8px}@media print{button{display:none}}</style></head><body><div style="font-size:28px;font-weight:800">Time<span style="color:#3B82F6">dit</span></div><div id="qr"></div><h1>${siteName}</h1><div class="sub">${siteNum}</div><div class="hint">Scan to clock in or out at this location</div><button onclick="window.print()">🖨 Print</button><script>new QRCode(document.getElementById('qr'),{text:'${url}',width:220,height:220,colorDark:'#07090C',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});<\/script></body></html>`);}
 
-async function loadGuards(){try{const guards=await db.query('guards','GET',null,`?company=eq.${currentCompany.name}&order=name.asc`);allGuards=guards||[];const list=document.getElementById('guardsList');if(!allGuards.length){list.innerHTML='<div class="empty-state">No guards registered yet</div>';return;}list.innerHTML=allGuards.map(g=>`<div class="guard-row"><div><div class="guard-row-name">${g.name||'Guard '+g.employee_id}</div><div class="guard-row-meta">ID ${g.employee_id} · <span class="role-badge ${g.role||'guard'}">${g.role||'guard'}</span></div></div><div class="guard-row-actions"><button class="btn-sm" onclick="openResetPin('${g.id}','${g.name||'Guard '+g.employee_id}')">Reset PIN</button></div></div>`).join('');}catch(e){console.log('Guards load error',e);}}
+async function loadGuards(){try{const guards=await db.query(‘guards’,‘GET’,null,`?company=eq.${currentCompany.name}&order=name.asc`);allGuards=guards||[];const list=document.getElementById(‘guardsList’);if(!allGuards.length){list.innerHTML=’<div class="empty-state">No guards registered yet</div>’;return;}list.innerHTML=allGuards.map(g=>`<div class="guard-row"><div><div class="guard-row-name">${g.name||'Guard '+g.employee_id}</div><div class="guard-row-meta">ID ${g.employee_id} · <span class="role-badge ${g.role||'guard'}">${g.role||'guard'}</span></div></div><div class="guard-row-actions"><button class="btn-sm" onclick="openResetPin('${g.id}','${g.name||'Guard '+g.employee_id}')">Reset PIN</button></div></div>`).join(’’);}catch(e){console.log(‘Guards load error’,e);}}
 
-function openResetPin(guardId,guardName){selectedGuardForReset=guardId;document.getElementById('resetModalName').textContent=guardName;document.getElementById('resetPinInput').value='';document.getElementById('resetModal').classList.add('open');}
+function openResetPin(guardId,guardName){selectedGuardForReset=guardId;document.getElementById(‘resetModalName’).textContent=guardName;document.getElementById(‘resetPinInput’).value=’’;document.getElementById(‘resetModal’).classList.add(‘open’);}
 async function confirmResetPin(){
-  const newPin=document.getElementById('resetPinInput').value.trim();
-  if(!/^\d{4}$/.test(newPin)){toast('⚠ PIN must be exactly 4 digits','warn');return;}
-  loading(true,'Resetting PIN...');
-  try{const pinHash=await hashPin(newPin);await db.query('guards','PATCH',{pin:pinHash},`?id=eq.${selectedGuardForReset}`);loading(false);closeModal('resetModal');toast('✓ PIN reset successfully','success');}
-  catch(e){loading(false);toast('⚠ Could not reset PIN','error');}
+const newPin=document.getElementById(‘resetPinInput’).value.trim();
+if(!/^\d{4}$/.test(newPin)){toast(‘⚠ PIN must be exactly 4 digits’,‘warn’);return;}
+loading(true,‘Resetting PIN…’);
+try{const pinHash=await hashPin(newPin);await db.query(‘guards’,‘PATCH’,{pin:pinHash},`?id=eq.${selectedGuardForReset}`);loading(false);closeModal(‘resetModal’);toast(‘✓ PIN reset successfully’,‘success’);}
+catch(e){loading(false);toast(‘⚠ Could not reset PIN’,‘error’);}
 }
 
 // ── Schedule ──────────────────────────────────────────────────────────────────
 function renderSchedDate(){
-  const today=fmtISO(new Date()),viewing=fmtISO(schedViewDate);
-  const label=(today===viewing?'Today — ':'')+schedViewDate.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
-  document.getElementById('schedDateDisplay').textContent=label;
+const today=fmtISO(new Date()),viewing=fmtISO(schedViewDate);
+const label=(today===viewing?‘Today — ‘:’’)+schedViewDate.toLocaleDateString(‘en-US’,{weekday:‘long’,month:‘long’,day:‘numeric’,year:‘numeric’});
+document.getElementById(‘schedDateDisplay’).textContent=label;
 }
 function changeSchedDate(delta){schedViewDate.setDate(schedViewDate.getDate()+delta);renderSchedDate();loadSchedule();}
 
 async function loadSchedule(){
-  const dateStr=fmtISO(schedViewDate);
-  try{
-    const scheduled=await db.query('scheduled_shifts','GET',null,`?company=eq.${currentCompany.name}&scheduled_date=eq.${dateStr}&order=start_time.asc`);
-    const list=document.getElementById('schedList');
-    if(!scheduled||!scheduled.length){list.innerHTML='<div class="empty-state">No shifts scheduled for this day.<br>Click + Add Shift to schedule one.</div>';return;}
-    const isToday=fmtISO(new Date())===dateStr;
-    list.innerHTML=scheduled.map(s=>`
-      <div class="sched-card${isToday?' today':''}">
-        <div>
-          <div class="sched-guard">${s.guard_name||'—'}</div>
-          <div class="sched-meta">📍 ${s.site_name||'—'}${s.notes?' · '+s.notes:''}</div>
-        </div>
-        <div style="text-align:right">
-          <div class="sched-time">${fmt24(s.start_time)} – ${fmt24(s.end_time)}</div>
-          <button class="btn-sm red" style="margin-top:8px" onclick="deleteScheduledShift('${s.id}')">✕ Remove</button>
-        </div>
-      </div>`).join('');
-  }catch(e){console.log('Schedule load error',e);}
+const dateStr=fmtISO(schedViewDate);
+try{
+const scheduled=await db.query(‘scheduled_shifts’,‘GET’,null,`?company=eq.${currentCompany.name}&scheduled_date=eq.${dateStr}&order=start_time.asc`);
+const list=document.getElementById(‘schedList’);
+if(!scheduled||!scheduled.length){list.innerHTML=’<div class="empty-state">No shifts scheduled for this day.<br>Click + Add Shift to schedule one.</div>’;return;}
+const isToday=fmtISO(new Date())===dateStr;
+list.innerHTML=scheduled.map(s=>` <div class="sched-card${isToday?' today':''}"> <div> <div class="sched-guard">${s.guard_name||'—'}</div> <div class="sched-meta">📍 ${s.site_name||'—'}${s.notes?' · '+s.notes:''}</div> </div> <div style="text-align:right"> <div class="sched-time">${fmt24(s.start_time)} – ${fmt24(s.end_time)}</div> <button class="btn-sm red" style="margin-top:8px" onclick="deleteScheduledShift('${s.id}')">✕ Remove</button> </div> </div>`).join(’’);
+}catch(e){console.log(‘Schedule load error’,e);}
 }
 
 function openAddShiftModal(){
-  const guardSel=document.getElementById('schedGuardSelect');
-  const siteSel=document.getElementById('schedSiteSelect');
-  guardSel.innerHTML=allGuards.filter(g=>g.role==='guard').map(g=>`<option value="${g.id}" data-name="${g.name||'Guard '+g.employee_id}">${g.name||'Guard '+g.employee_id}</option>`).join('');
-  siteSel.innerHTML=allSites.map(s=>`<option value="${s.id}" data-name="${s.name}">${s.name}</option>`).join('');
-  document.getElementById('schedDate').value=fmtISO(schedViewDate);
-  document.getElementById('schedStart').value='';
-  document.getElementById('schedEnd').value='';
-  document.getElementById('schedNotes').value='';
-  document.getElementById('addShiftModal').classList.add('open');
+const guardSel=document.getElementById(‘schedGuardSelect’);
+const siteSel=document.getElementById(‘schedSiteSelect’);
+guardSel.innerHTML=allGuards.filter(g=>g.role===‘guard’).map(g=>`<option value="${g.id}" data-name="${g.name||'Guard '+g.employee_id}">${g.name||'Guard '+g.employee_id}</option>`).join(’’);
+siteSel.innerHTML=allSites.map(s=>`<option value="${s.id}" data-name="${s.name}">${s.name}</option>`).join(’’);
+document.getElementById(‘schedDate’).value=fmtISO(schedViewDate);
+document.getElementById(‘schedStart’).value=’’;
+document.getElementById(‘schedEnd’).value=’’;
+document.getElementById(‘schedNotes’).value=’’;
+document.getElementById(‘addShiftModal’).classList.add(‘open’);
 }
 
 async function saveScheduledShift(){
-  const gSel=document.getElementById('schedGuardSelect');
-  const sSel=document.getElementById('schedSiteSelect');
-  const guardId=gSel.value,guardName=gSel.options[gSel.selectedIndex]?.dataset.name||'';
-  const siteId=sSel.value,siteName=sSel.options[sSel.selectedIndex]?.dataset.name||'';
-  const date=document.getElementById('schedDate').value;
-  const start=document.getElementById('schedStart').value;
-  const end=document.getElementById('schedEnd').value;
-  const notes=document.getElementById('schedNotes').value.trim();
-  if(!guardId||!siteId||!date||!start||!end){toast('⚠ Fill in all required fields','warn');return;}
-  if(end<=start){toast('⚠ End time must be after start time','warn');return;}
-  loading(true,'Saving shift...');
-  try{
-    await db.query('scheduled_shifts','POST',{guard_id:guardId,guard_name:guardName,site_id:siteId,site_name:siteName,company:currentCompany.name,scheduled_date:date,start_time:start,end_time:end,notes:notes||null});
-    loading(false);closeModal('addShiftModal');toast('✓ Shift scheduled','success');
-    schedViewDate=new Date(date+'T12:00:00');renderSchedDate();loadSchedule();
-  }catch(e){loading(false);toast('⚠ Could not save shift','error');}
+const gSel=document.getElementById(‘schedGuardSelect’);
+const sSel=document.getElementById(‘schedSiteSelect’);
+const guardId=gSel.value,guardName=gSel.options[gSel.selectedIndex]?.dataset.name||’’;
+const siteId=sSel.value,siteName=sSel.options[sSel.selectedIndex]?.dataset.name||’’;
+const date=document.getElementById(‘schedDate’).value;
+const start=document.getElementById(‘schedStart’).value;
+const end=document.getElementById(‘schedEnd’).value;
+const notes=document.getElementById(‘schedNotes’).value.trim();
+if(!guardId||!siteId||!date||!start||!end){toast(‘⚠ Fill in all required fields’,‘warn’);return;}
+if(end<=start){toast(‘⚠ End time must be after start time’,‘warn’);return;}
+loading(true,‘Saving shift…’);
+try{
+await db.query(‘scheduled_shifts’,‘POST’,{guard_id:guardId,guard_name:guardName,site_id:siteId,site_name:siteName,company:currentCompany.name,scheduled_date:date,start_time:start,end_time:end,notes:notes||null});
+loading(false);closeModal(‘addShiftModal’);toast(‘✓ Shift scheduled’,‘success’);
+schedViewDate=new Date(date+‘T12:00:00’);renderSchedDate();loadSchedule();
+}catch(e){loading(false);toast(‘⚠ Could not save shift’,‘error’);}
 }
 
 async function deleteScheduledShift(id){
-  if(!confirm('Remove this scheduled shift?'))return;
-  loading(true,'Removing...');
-  try{await db.query('scheduled_shifts','DELETE',null,`?id=eq.${id}`);loading(false);toast('✓ Shift removed','success');loadSchedule();}
-  catch(e){loading(false);toast('⚠ Could not remove shift','error');}
+if(!confirm(‘Remove this scheduled shift?’))return;
+loading(true,‘Removing…’);
+try{await db.query(‘scheduled_shifts’,‘DELETE’,null,`?id=eq.${id}`);loading(false);toast(‘✓ Shift removed’,‘success’);loadSchedule();}
+catch(e){loading(false);toast(‘⚠ Could not remove shift’,‘error’);}
 }
 
 async function loadAlertSettings(){
-  try{
-    const companies=await db.query('companies','GET',null,`?id=eq.${currentCompany.id}`);
-    if(companies&&companies[0]){
-      const c=companies[0];
-      if(c.supervisor_phone)document.getElementById('settingsPhone').value=c.supervisor_phone;
-      if(c.grace_period_minutes)document.getElementById('settingsGrace').value=c.grace_period_minutes;
-    }
-  }catch(e){console.log('Settings load error',e);}
+try{
+const companies=await db.query(‘companies’,‘GET’,null,`?id=eq.${currentCompany.id}`);
+if(companies&&companies[0]){
+const c=companies[0];
+if(c.supervisor_phone)document.getElementById(‘settingsPhone’).value=c.supervisor_phone;
+if(c.grace_period_minutes)document.getElementById(‘settingsGrace’).value=c.grace_period_minutes;
+}
+}catch(e){console.log(‘Settings load error’,e);}
 }
 
 async function saveAlertSettings(){
-  const phone=document.getElementById('settingsPhone').value.trim();
-  const grace=parseInt(document.getElementById('settingsGrace').value)||15;
-  if(!phone){toast('⚠ Enter a phone number','warn');return;}
-  loading(true,'Saving...');
-  try{
-    await db.query('companies','PATCH',{supervisor_phone:phone,grace_period_minutes:grace},`?id=eq.${currentCompany.id}`);
-    currentCompany.supervisor_phone=phone;
-    currentCompany.grace_period_minutes=grace;
-    loading(false);
-    const saved=document.getElementById('settingsSaved');
-    saved.style.display='block';
-    setTimeout(()=>saved.style.display='none',3000);
-    toast('✓ Alert settings saved','success');
-  }catch(e){loading(false);toast('⚠ Could not save settings','error');}
+const phone=document.getElementById(‘settingsPhone’).value.trim();
+const grace=parseInt(document.getElementById(‘settingsGrace’).value)||15;
+if(!phone){toast(‘⚠ Enter a phone number’,‘warn’);return;}
+loading(true,‘Saving…’);
+try{
+await db.query(‘companies’,‘PATCH’,{supervisor_phone:phone,grace_period_minutes:grace},`?id=eq.${currentCompany.id}`);
+currentCompany.supervisor_phone=phone;
+currentCompany.grace_period_minutes=grace;
+loading(false);
+const saved=document.getElementById(‘settingsSaved’);
+saved.style.display=‘block’;
+setTimeout(()=>saved.style.display=‘none’,3000);
+toast(‘✓ Alert settings saved’,‘success’);
+}catch(e){loading(false);toast(‘⚠ Could not save settings’,‘error’);}
 }
 
-if(currentSup&&currentCompany){enterDashboard();}else{show('loginScreen');}
+if(currentSup&&currentCompany){enterDashboard();}else{show(‘loginScreen’);}
 </script>
+
 </body>
 </html>
