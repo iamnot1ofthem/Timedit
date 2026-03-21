@@ -166,7 +166,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
   <canvas id="qrCanvas" style="display:none"></canvas>
   <div class="qr-overlay">
     <div class="qr-frame" id="qrFrame"><div class="qr-scan-line"></div></div>
-    <div class="qr-hint" id="qrHint">Point camera at site QR code</div>
+    <div class="qr-hint" id="qrHint">Open your phone camera app and scan the QR code</div>
   </div>
 </div>
 <div class="screen centered" id="gpsScreen">
@@ -386,7 +386,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
   </div>
   <div class="clockout-wrap">
     <button class="btn-clockout" id="btnClockOut" onclick="startClockOut()" disabled>■ Clock Out</button>
-    <div class="clockout-hint" id="clockOutHint" style="display:none">Scan site QR code to clock out</div>
+    <div class="clockout-hint" id="clockOutHint" style="display:none">Tap to clock out with GPS + PIN</div>
   </div>
   <div class="history-wrap">
     <div class="section-label">My Shifts</div>
@@ -470,7 +470,7 @@ async function startClockOut(){
     startGpsVerify();
   }catch(e){loading(false);toast('⚠ Could not load site — try again','error');}
 }
-async function startScan(){const badge=document.getElementById('qrModeBadge'),frame=document.getElementById('qrFrame'),hint=document.getElementById('qrHint');badge.textContent=scanMode==='in'?'Clock In':'Clock Out';badge.className=`qr-mode-badge ${scanMode==='in'?'in':'out'}`;frame.className=`qr-frame${scanMode==='out'?' out-mode':''}`;hint.textContent=scanMode==='in'?'Scan site QR code to clock in':'Scan site QR code to clock out';show('qrScreen');scanActive=true;try{videoStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});document.getElementById('qrVideo').srcObject=videoStream;requestAnimationFrame(scanFrame);}catch(e){toast('⚠ Camera access denied','error');show('mainScreen');}}
+async function startScan(){const badge=document.getElementById('qrModeBadge'),frame=document.getElementById('qrFrame'),hint=document.getElementById('qrHint');badge.textContent=scanMode==='in'?'Clock In':'Clock Out';badge.className=`qr-mode-badge ${scanMode==='in'?'in':'out'}`;frame.className=`qr-frame${scanMode==='out'?' out-mode':''}`;hint.textContent='Open your phone camera app and scan the QR code';show('qrScreen');scanActive=true;try{videoStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});document.getElementById('qrVideo').srcObject=videoStream;requestAnimationFrame(scanFrame);}catch(e){toast('⚠ Camera access denied','error');show('mainScreen');}}
 function scanFrame(){if(!scanActive)return;const video=document.getElementById('qrVideo'),canvas=document.getElementById('qrCanvas');if(video.readyState===video.HAVE_ENOUGH_DATA){canvas.width=video.videoWidth;canvas.height=video.videoHeight;const ctx=canvas.getContext('2d');ctx.drawImage(video,0,0,canvas.width,canvas.height);const code=jsQR(ctx.getImageData(0,0,canvas.width,canvas.height).data,canvas.width,canvas.height);if(code){stopScan();handleQR(code.data);return;}}requestAnimationFrame(scanFrame);}
 function stopScan(){scanActive=false;if(videoStream){videoStream.getTracks().forEach(t=>t.stop());videoStream=null;}}
 function cancelScan(){stopScan();show(currentGuard?'mainScreen':'mainScreen');}
