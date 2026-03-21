@@ -372,6 +372,19 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
         <input class="field-input" id="settingsGrace" type="number" min="1" max="60" placeholder="15" style="font-size:14px" />
         <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:4px">Alert fires this many minutes after shift start if guard hasn't clocked in.</div>
       </div>
+      <div class="field" style="margin-top:16px">
+        <label class="field-label">Timezone</label>
+        <select class="field-input" id="settingsTimezone" style="font-size:14px">
+          <option value="America/New_York">Eastern (ET) — New York</option>
+          <option value="America/Chicago">Central (CT) — Chicago</option>
+          <option value="America/Denver">Mountain (MT) — Denver</option>
+          <option value="America/Los_Angeles">Pacific (PT) — Los Angeles</option>
+          <option value="America/Phoenix">Mountain no DST — Phoenix</option>
+          <option value="America/Anchorage">Alaska (AKT) — Anchorage</option>
+          <option value="Pacific/Honolulu">Hawaii (HT) — Honolulu</option>
+        </select>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:4px">All times in the dashboard and payroll exports will display in this timezone.</div>
+      </div>
       <div style="margin-top:20px;display:flex;gap:10px;align-items:center">
         <button class="btn btn-accent" onclick="saveAlertSettings()" style="flex:1">Save Settings</button>
         <div id="settingsSaved" style="font-family:var(--mono);font-size:11px;color:#4caf50;display:none">✓ Saved</div>
@@ -427,11 +440,12 @@ let currentSup=JSON.parse(localStorage.getItem('td_sup')||'null');
 let currentCompany=JSON.parse(localStorage.getItem('td_sup_company')||'null');
 let loginEmpId='',loginCompany=null,pinEntry='',regPin='',allShifts=[],allGuards=[],allSites=[],liveTimer=null,selectedGuardForReset=null;
 let schedViewDate=new Date();
+let companyTz='America/New_York';
 
 const pad=n=>String(n).padStart(2,'0');
-function fmtTime(ts){const d=new Date(ts);let h=d.getHours(),m=d.getMinutes();const ap=h>=12?'PM':'AM';h=h%12||12;return `${h}:${pad(m)} ${ap}`;}
+function fmtTime(ts){return new Date(ts).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true,timeZone:companyTz});}
 function fmt24(t){const[h,m]=t.split(':');let hh=parseInt(h);const ap=hh>=12?'PM':'AM';hh=hh%12||12;return `${hh}:${m} ${ap}`;}
-function fmtDate(ts){return new Date(ts).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});}
+function fmtDate(ts){return new Date(ts).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',timeZone:companyTz});}
 function fmtISO(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;}
 function fmtDur(ms){const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60);return `${h}:${pad(m)}`;}
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
@@ -498,6 +512,7 @@ async function completeRegister(){
 function logout(){localStorage.removeItem('td_sup');localStorage.removeItem('td_sup_company');currentSup=null;currentCompany=null;clearInterval(liveTimer);show('loginScreen');}
 
 function enterDashboard(){
+  companyTz=currentCompany.timezone||'America/New_York';
   document.getElementById('navSupName').textContent=currentSup.name||`Supervisor ${currentSup.employee_id}`;
   show('dashScreen');loadLive();loadSites();loadGuards();
   schedViewDate=new Date();renderSchedDate();
@@ -513,7 +528,7 @@ function switchTab(tab,el){
   if(tab==='settings')loadAlertSettings();
 }
 
-async function loadLive(){try{const[guards,shifts]=await Promise.all([db.query('guards','GET',null,`?company=eq.${currentCompany.name}&role=eq.guard`),db.query('shifts','GET',null,`?company=eq.${currentCompany.name}&clock_out=is.null&order=clock_in.desc`)]);const map={};(shifts||[]).forEach(s=>{map[s.guard_id]=s;});const on=(guards||[]).filter(g=>map[g.id]),off=(guards||[]).filter(g=>!map[g.id]);document.getElementById('statOnDuty').textContent=on.length;document.getElementById('statOffDuty').textContent=off.length;const sites=await db.query('sites','GET',null,`?company=eq.${currentCompany.name}`);document.getElementById('statSites').textContent=(sites||[]).length;const now=new Date();document.getElementById('liveTicker').textContent=`Updated ${now.getHours()%12||12}:${pad(now.getMinutes())} ${now.getHours()>=12?'PM':'AM'}`;const onList=document.getElementById('onDutyList');if(!on.length){onList.innerHTML='<div class="empty-state">No guards currently on duty</div>';}else{onList.innerHTML=on.map(g=>{const s=map[g.id],ms=Date.now()-new Date(s.clock_in).getTime();return`<div class="guard-card on"><div><div class="guard-name">${g.name||'Guard '+g.employee_id}</div><div class="guard-meta">ID ${g.employee_id} · ${s.site_name} · IN ${fmtTime(new Date(s.clock_in))}</div></div><div class="guard-status"><div class="status-pill on"><div class="s-dot"></div>On Duty</div><div class="guard-elapsed">${fmtDur(ms)}</div></div></div>`;}).join('');}const offList=document.getElementById('offDutyList');if(!off.length){offList.innerHTML='<div class="empty-state">No off-duty guards</div>';}else{offList.innerHTML=off.map(g=>`<div class="guard-card"><div><div class="guard-name">${g.name||'Guard '+g.employee_id}</div><div class="guard-meta">ID ${g.employee_id}</div></div><div class="status-pill off"><div class="s-dot"></div>Off Duty</div></div>`).join('');}}catch(e){console.log('Live load error',e);}}
+async function loadLive(){try{const[guards,shifts]=await Promise.all([db.query('guards','GET',null,`?company=eq.${currentCompany.name}&role=eq.guard`),db.query('shifts','GET',null,`?company=eq.${currentCompany.name}&clock_out=is.null&order=clock_in.desc`)]);const map={};(shifts||[]).forEach(s=>{map[s.guard_id]=s;});const on=(guards||[]).filter(g=>map[g.id]),off=(guards||[]).filter(g=>!map[g.id]);document.getElementById('statOnDuty').textContent=on.length;document.getElementById('statOffDuty').textContent=off.length;const sites=await db.query('sites','GET',null,`?company=eq.${currentCompany.name}`);document.getElementById('statSites').textContent=(sites||[]).length;const now=new Date();document.getElementById('liveTicker').textContent=`Updated ${fmtTime(now)}`;const onList=document.getElementById('onDutyList');if(!on.length){onList.innerHTML='<div class="empty-state">No guards currently on duty</div>';}else{onList.innerHTML=on.map(g=>{const s=map[g.id],ms=Date.now()-new Date(s.clock_in).getTime();return`<div class="guard-card on"><div><div class="guard-name">${g.name||'Guard '+g.employee_id}</div><div class="guard-meta">ID ${g.employee_id} · ${s.site_name} · IN ${fmtTime(new Date(s.clock_in))}</div></div><div class="guard-status"><div class="status-pill on"><div class="s-dot"></div>On Duty</div><div class="guard-elapsed">${fmtDur(ms)}</div></div></div>`;}).join('');}const offList=document.getElementById('offDutyList');if(!off.length){offList.innerHTML='<div class="empty-state">No off-duty guards</div>';}else{offList.innerHTML=off.map(g=>`<div class="guard-card"><div><div class="guard-name">${g.name||'Guard '+g.employee_id}</div><div class="guard-meta">ID ${g.employee_id}</div></div><div class="status-pill off"><div class="s-dot"></div>Off Duty</div></div>`).join('');}}catch(e){console.log('Live load error',e);}}
 
 async function loadShifts(){
   try{
@@ -823,6 +838,7 @@ async function loadAlertSettings(){
       const c=companies[0];
       if(c.supervisor_phone)document.getElementById('settingsPhone').value=c.supervisor_phone;
       if(c.grace_period_minutes)document.getElementById('settingsGrace').value=c.grace_period_minutes;
+      if(c.timezone){document.getElementById('settingsTimezone').value=c.timezone;companyTz=c.timezone;}
     }
   }catch(e){console.log('Settings load error',e);}
 }
@@ -830,17 +846,20 @@ async function loadAlertSettings(){
 async function saveAlertSettings(){
   const phone=document.getElementById('settingsPhone').value.trim();
   const grace=parseInt(document.getElementById('settingsGrace').value)||15;
+  const tz=document.getElementById('settingsTimezone').value;
   if(!phone){toast('⚠ Enter a phone number','warn');return;}
   loading(true,'Saving...');
   try{
-    await db.query('companies','PATCH',{supervisor_phone:phone,grace_period_minutes:grace},`?id=eq.${currentCompany.id}`);
+    await db.query('companies','PATCH',{supervisor_phone:phone,grace_period_minutes:grace,timezone:tz},`?id=eq.${currentCompany.id}`);
     currentCompany.supervisor_phone=phone;
     currentCompany.grace_period_minutes=grace;
+    currentCompany.timezone=tz;
+    companyTz=tz;
     loading(false);
     const saved=document.getElementById('settingsSaved');
     saved.style.display='block';
     setTimeout(()=>saved.style.display='none',3000);
-    toast('✓ Alert settings saved','success');
+    toast('✓ Settings saved','success');
   }catch(e){loading(false);toast('⚠ Could not save settings','error');}
 }
 
