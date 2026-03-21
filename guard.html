@@ -385,7 +385,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
     <div class="hour-box"><div class="hour-val" id="hPeriod">0:00</div><div class="hour-key">Pay Period</div></div>
   </div>
   <div class="clockout-wrap">
-    <button class="btn-clockout" id="btnClockOut" onclick="startClockOutScan()" disabled>■ Clock Out</button>
+    <button class="btn-clockout" id="btnClockOut" onclick="startClockOut()" disabled>■ Clock Out</button>
     <div class="clockout-hint" id="clockOutHint" style="display:none">Scan site QR code to clock out</div>
   </div>
   <div class="history-wrap">
@@ -452,13 +452,31 @@ function startTokenCountdown(){clearInterval(tokenTimer);const box=document.getE
 window.addEventListener('beforeunload',()=>{consumeToken();});
 function startClockInScan(){scanMode='in';startScan();}
 function startClockOutScan(){scanMode='out';startScan();}
+async function startClockOut(){
+  if(!currentShift){toast('⚠ You are not clocked in','warn');return;}
+  scanMode='out';
+  loading(true,'Loading site...');
+  try{
+    if(currentShift.zone_id){
+      const zones=await db.query('zones','GET',null,`?id=eq.${currentShift.zone_id}`);
+      if(zones&&zones.length){const z=zones[0];currentSite={id:z.site_id,name:z.site_name,displayName:`${z.site_name} · ${z.name}`,latitude:z.latitude,longitude:z.longitude,geo_radius_meters:z.geo_radius_meters,zoneId:z.id,zoneName:z.name};}
+    }else{
+      const sites=await db.query('sites','GET',null,`?name=eq.${encodeURIComponent(currentShift.site_name)}&company=eq.${encodeURIComponent(currentGuard.company)}&limit=1`);
+      if(sites&&sites.length){currentSite=sites[0];currentSite.displayName=sites[0].name;}
+    }
+    if(!currentSite)throw new Error('Site not found');
+    createToken(currentSite.zoneId||currentSite.id,'out');
+    loading(false);
+    startGpsVerify();
+  }catch(e){loading(false);toast('⚠ Could not load site — try again','error');}
+}
 async function startScan(){const badge=document.getElementById('qrModeBadge'),frame=document.getElementById('qrFrame'),hint=document.getElementById('qrHint');badge.textContent=scanMode==='in'?'Clock In':'Clock Out';badge.className=`qr-mode-badge ${scanMode==='in'?'in':'out'}`;frame.className=`qr-frame${scanMode==='out'?' out-mode':''}`;hint.textContent=scanMode==='in'?'Scan site QR code to clock in':'Scan site QR code to clock out';show('qrScreen');scanActive=true;try{videoStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});document.getElementById('qrVideo').srcObject=videoStream;requestAnimationFrame(scanFrame);}catch(e){toast('⚠ Camera access denied','error');show('mainScreen');}}
 function scanFrame(){if(!scanActive)return;const video=document.getElementById('qrVideo'),canvas=document.getElementById('qrCanvas');if(video.readyState===video.HAVE_ENOUGH_DATA){canvas.width=video.videoWidth;canvas.height=video.videoHeight;const ctx=canvas.getContext('2d');ctx.drawImage(video,0,0,canvas.width,canvas.height);const code=jsQR(ctx.getImageData(0,0,canvas.width,canvas.height).data,canvas.width,canvas.height);if(code){stopScan();handleQR(code.data);return;}}requestAnimationFrame(scanFrame);}
 function stopScan(){scanActive=false;if(videoStream){videoStream.getTracks().forEach(t=>t.stop());videoStream=null;}}
 function cancelScan(){stopScan();show(currentGuard?'mainScreen':'mainScreen');}
 async function handleQR(data){loading(true,'Reading QR code...');try{const siteId=data.includes('?site=')?new URL(data).searchParams.get('site'):data.trim();const sites=await db.query('sites','GET',null,`?id=eq.${siteId}`);if(!sites||!sites.length)throw new Error('Site not found');currentSite=sites[0];createToken(siteId,scanMode);loading(false);startGpsVerify();}catch(e){loading(false);toast('⚠ Invalid QR code','error');show(currentGuard?'mainScreen':'mainScreen');}}
 function startGpsVerify(){show('gpsScreen');const isOut=scanMode==='out';document.getElementById('gpsSubtitle').textContent=isOut?'Confirming Location':'Verifying Location';document.getElementById('gpsModeTitle').textContent=isOut?'Confirm Clock Out':'Confirming Your Site';document.getElementById('siteConfirmBox').style.display='none';document.getElementById('gpsNextBtn').disabled=true;document.getElementById('gpsDot').className='gps-dot checking';document.getElementById('gpsText').textContent='Requesting location access...';document.getElementById('gpsText').className='gps-text';document.getElementById('gpsNextBtn').textContent=isOut?'Clock Out →':'Continue →';document.getElementById('gpsNextBtn').className=isOut?'btn-primary':'btn-primary btn-green';if(isOut)document.getElementById('gpsNextBtn').style.background='var(--red)';if(!navigator.geolocation){document.getElementById('gpsDot').className='gps-dot error';document.getElementById('gpsText').textContent='GPS not supported on this device';return;}navigator.geolocation.getCurrentPosition(pos=>{userCoords={lat:pos.coords.latitude,lng:pos.coords.longitude};const dist=distMeters(userCoords.lat,userCoords.lng,currentSite.latitude,currentSite.longitude),radius=currentSite.geo_radius_meters||100;if(dist<=radius){document.getElementById('gpsDot').className='gps-dot ok';document.getElementById('gpsText').textContent=`✓ Location confirmed · ${Math.round(dist)}m from site`;document.getElementById('gpsText').className='gps-text ok';document.getElementById('siteConfirmLabel')&&(document.getElementById('siteConfirmLabel').textContent=isOut?'✓ Clocking out from':'✓ You are at');document.getElementById('siteConfirmName').textContent=currentSite.name;document.getElementById('siteConfirmBox').style.display='block';document.getElementById('gpsNextBtn').disabled=false;}else{document.getElementById('gpsDot').className='gps-dot error';document.getElementById('gpsText').textContent=`⚠ You are ${Math.round(dist)}m away from ${currentSite.name}`;document.getElementById('gpsText').className='gps-text error';}},err=>{document.getElementById('gpsDot').className='gps-dot error';document.getElementById('gpsText').textContent=err.code===1?'Location access denied — please allow location':'Could not get location';document.getElementById('gpsText').className='gps-text error';},{enableHighAccuracy:true,timeout:15000});}
-function afterGpsConfirm(){if(scanMode==='out'){if(!isTokenValid('out')){toast('⚠ Session expired — scan QR again','warn');show('mainScreen');return;}showClockOutConfirm();}else{if(!isTokenValid('in')){toast('⚠ Session expired — scan QR again','warn');show('mainScreen');return;}if(currentGuard){document.getElementById('pinEmpIdDisplay').textContent=`${currentGuard.name||'Employee'} · ID ${currentGuard.employee_id}`;pinEntry='';updateDots();document.getElementById('pinErr').style.display='none';show('pinScreen');}else{show('setupScreen1');}}}
+function afterGpsConfirm(){if(scanMode==='out'){if(!isTokenValid('out')){toast('⚠ Session expired — try again','warn');show('mainScreen');return;}document.getElementById('pinEmpIdDisplay').textContent=`${currentGuard.name||'Employee'} · ID ${currentGuard.employee_id}`;pinEntry='';updateDots();document.getElementById('pinErr').style.display='none';show('pinScreen');}else{if(!isTokenValid('in')){toast('⚠ Session expired — scan QR again','warn');show('mainScreen');return;}if(currentGuard){document.getElementById('pinEmpIdDisplay').textContent=`${currentGuard.name||'Employee'} · ID ${currentGuard.employee_id}`;pinEntry='';updateDots();document.getElementById('pinErr').style.display='none';show('pinScreen');}else{show('setupScreen1');}}}
 async function setupStep2(){const name=document.getElementById('setupName').value.trim(),empId=document.getElementById('setupEmpId').value.trim(),code=document.getElementById('setupCompanyCode').value.trim().toUpperCase();if(!name){toast('⚠ Enter your full name','warn');return;}if(!empId){toast('⚠ Enter your employee ID','warn');return;}if(!code){toast('⚠ Enter your company code','warn');return;}loading(true,'Verifying company code...');try{const companies=await db.query('companies','GET',null,`?guard_code=eq.${code}`);if(!companies||!companies.length){loading(false);toast('⚠ Invalid company code — ask your manager','error');return;}window._setupCompany=companies[0];loading(false);setupPin1='';setupPin2='';updateSetupDots1();show('setupScreen2');}catch(e){loading(false);toast('⚠ Could not verify code. Try again.','error');}}
 function setupNumTap(n){if(setupPin1.length>=4)return;setupPin1+=n;updateSetupDots1();if(setupPin1.length===4)setTimeout(()=>show('setupScreen3'),200);}
 function setupPinBack(step){if(step===1){setupPin1=setupPin1.slice(0,-1);updateSetupDots1();}else{setupPin2=setupPin2.slice(0,-1);updateSetupDots2();}}
@@ -496,8 +514,7 @@ function pinBack(){pinEntry=pinEntry.slice(0,-1);updateDots();}
 function updateDots(){for(let i=0;i<4;i++){const d=document.getElementById('pd'+i);d.className='pin-dot'+(i<pinEntry.length?' filled':'');}}
 
 async function checkPin(){
-  if(!isTokenValid('in')){toast('⚠ Session expired — scan QR again','warn');show('mainScreen');return;}
-  // Hash the entered PIN and compare to stored hash
+  if(!isTokenValid(scanMode)){toast('⚠ Session expired — try again','warn');show('mainScreen');return;}
   const enteredHash = await hashPin(pinEntry);
   if(enteredHash !== currentGuard.pin){
     for(let i=0;i<4;i++)document.getElementById('pd'+i).className='pin-dot error';
@@ -506,7 +523,7 @@ async function checkPin(){
     return;
   }
   document.getElementById('pinErr').style.display='none';
-  showClockInConfirm();
+  if(scanMode==='out'){showClockOutConfirm();}else{showClockInConfirm();}
 }
 
 function showClockInConfirm(){document.getElementById('clockInSiteName').textContent=currentSite.displayName||currentSite.name;document.getElementById('clockInEmpName').textContent=currentGuard.name||`Employee ${currentGuard.employee_id}`;if(currentShift){show('mainScreen');updateDashboard();return;}show('clockInScreen');}
