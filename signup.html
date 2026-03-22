@@ -250,7 +250,7 @@ nav{position:relative;z-index:10;padding:20px 40px;display:flex;align-items:cent
 
 <script>
 const SUPABASE_URL='https://zxnsqorwixmaazuovwvg.supabase.co';
-const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4bnNxb3J3aXhtYWF6dW92d3ZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA2MjM1ODUsImV4cCI6MjA1NjE5OTU4NX0.QLVcNksNHCBFfKPHNbGEQWmOAFb9026kHiSEMRvJBBA';
+const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4bnNxb3J3aXhtYWF6dW92d3ZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxNjE5OTMsImV4cCI6MjA4NzczNzk5M30.pTt0WqKR-6i54gT-nhgv1wru7Y0KvfG1A1GdRkmCAEc';
 const EDGE_URL='https://zxnsqorwixmaazuovwvg.supabase.co/functions/v1';
 
 const db={async query(table,method='GET',body=null,filter=''){
@@ -481,9 +481,11 @@ async function createAccount(){
     document.getElementById('successScreen').style.display='block';
 
   }catch(e){
-    console.error(e);
+    console.error('createAccount error:',e);
     let msg='⚠ Something went wrong — please try again';
     if(e.message&&e.message.includes('duplicate'))msg='⚠ Duplicate detected — please try a slightly different company name';
+    else if(e.message&&e.message.includes('violates'))msg='⚠ Setup error — please refresh and try again';
+    else if(e.message)msg=`⚠ ${e.message.substring(0,120)}`;
     toast(msg);
     btn.textContent='🚀 Launch My Dashboard';btn.disabled=false;
   }
