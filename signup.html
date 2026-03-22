@@ -141,6 +141,12 @@ nav{position:relative;z-index:10;padding:20px 40px;display:flex;align-items:cent
             <div class="field-error" id="eCompany">Please enter your company name</div>
           </div>
           <div class="field">
+            <label class="field-label">Guard Code</label>
+            <input class="field-input" id="guardCodeInput" type="text" placeholder="e.g. METRO2024" style="text-transform:uppercase" autocomplete="off" />
+            <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:4px">Guards will use this code to register — keep it simple.</div>
+            <div class="field-error" id="eGuardCode">Please enter a guard code (no spaces)</div>
+          </div>
+          <div class="field">
             <label class="field-label">Your Full Name</label>
             <input class="field-input" id="supName" type="text" placeholder="Your full name..." autocomplete="name" />
             <div class="field-error" id="eName">Please enter your name</div>
@@ -343,11 +349,13 @@ function selectPlan(plan){
 async function goStep2(){
   clearErrs();
   const company=document.getElementById('companyName').value.trim();
+  const guardCode=document.getElementById('guardCodeInput').value.trim().toUpperCase();
   const name=document.getElementById('supName').value.trim();
   const email=document.getElementById('email').value.trim();
   const pw=document.getElementById('password').value;
   let ok=true;
   if(!company){markErr('companyName','eCompany');ok=false;}
+  if(!guardCode||/\s/.test(guardCode)){markErr('guardCodeInput','eGuardCode');ok=false;}
   if(!name){markErr('supName','eName');ok=false;}
   if(!email||!email.includes('@')||!email.includes('.')){markErr('email','eEmail');ok=false;}
   if(pw.length<8){markErr('password','ePassword');ok=false;}
@@ -368,6 +376,13 @@ async function goStep2(){
     const existingCo=await db.query('companies','GET',null,`?name=ilike.${encodeURIComponent(company)}&limit=1`);
     if(existingCo&&existingCo.length>0){
       markErr('companyName','eCompany','A company with this name already exists — try adding your city or state');
+      btn.textContent='Continue →';btn.disabled=false;
+      return;
+    }
+    // Check guard code not taken
+    const existingCode=await db.query('companies','GET',null,`?guard_code=eq.${encodeURIComponent(guardCode)}&limit=1`);
+    if(existingCode&&existingCode.length>0){
+      markErr('guardCodeInput','eGuardCode','That code is already taken — try adding a number or your city');
       btn.textContent='Continue →';btn.disabled=false;
       return;
     }
@@ -411,12 +426,10 @@ async function createAccount(){
     const email=document.getElementById('email').value.trim().toLowerCase();
     const pw=document.getElementById('password').value;
 
-    // Generate collision-safe unique codes
-    btn.textContent='Generating your codes...';
-    const[supCode,guardCode]=await Promise.all([
-      genUniqueCode(companyName,'SUP','supervisor_code'),
-      genUniqueCode(companyName,'GUARD','guard_code')
-    ]);
+    // Generate supervisor code; guard code is chosen by manager
+    btn.textContent='Setting up your company...';
+    const guardCode=document.getElementById('guardCodeInput').value.trim().toUpperCase();
+    const supCode=await genUniqueCode(companyName,'SUP','supervisor_code');
 
     btn.textContent='Creating your company...';
     const[pinHash,pwHash]=await Promise.all([hash(pin),hash(pw+'timedit_salt_2026')]);

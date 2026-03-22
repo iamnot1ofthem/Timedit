@@ -203,7 +203,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
       <div class="step-dot"></div>
     </div>
     <div class="card-title">Who are you?</div>
-    <div class="card-sub">Enter your details.<br>Your manager will give you the company code.</div>
+    <div class="card-sub">Enter your details to get started.</div>
     <div class="field">
       <label class="field-label">Full Name</label>
       <input class="field-input" id="setupName" type="text" placeholder="Your full name..." autocomplete="name" />
@@ -215,6 +215,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
     <div class="field">
       <label class="field-label">Company Code</label>
       <input class="field-input" id="setupCompanyCode" type="text" placeholder="Ask your supervisor..." style="text-transform:uppercase" />
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:4px" id="setupCompanyCodeHint">Only required if you've never registered before.</div>
     </div>
     <button class="btn-primary btn-green" onclick="setupStep2()">Next →</button>
   </div>
@@ -477,7 +478,32 @@ function cancelScan(){stopScan();show(currentGuard?'mainScreen':'mainScreen');}
 async function handleQR(data){loading(true,'Reading QR code...');try{const siteId=data.includes('?site=')?new URL(data).searchParams.get('site'):data.trim();const sites=await db.query('sites','GET',null,`?id=eq.${siteId}`);if(!sites||!sites.length)throw new Error('Site not found');currentSite=sites[0];createToken(siteId,scanMode);loading(false);startGpsVerify();}catch(e){loading(false);toast('⚠ Invalid QR code','error');show(currentGuard?'mainScreen':'mainScreen');}}
 function startGpsVerify(){show('gpsScreen');const isOut=scanMode==='out';document.getElementById('gpsSubtitle').textContent=isOut?'Confirming Location':'Verifying Location';document.getElementById('gpsModeTitle').textContent=isOut?'Confirm Clock Out':'Confirming Your Site';document.getElementById('siteConfirmBox').style.display='none';document.getElementById('gpsNextBtn').disabled=true;document.getElementById('gpsDot').className='gps-dot checking';document.getElementById('gpsText').textContent='Requesting location access...';document.getElementById('gpsText').className='gps-text';document.getElementById('gpsNextBtn').textContent=isOut?'Clock Out →':'Continue →';document.getElementById('gpsNextBtn').className=isOut?'btn-primary':'btn-primary btn-green';if(isOut)document.getElementById('gpsNextBtn').style.background='var(--red)';if(!navigator.geolocation){document.getElementById('gpsDot').className='gps-dot error';document.getElementById('gpsText').textContent='GPS not supported on this device';return;}navigator.geolocation.getCurrentPosition(pos=>{userCoords={lat:pos.coords.latitude,lng:pos.coords.longitude};const dist=distMeters(userCoords.lat,userCoords.lng,currentSite.latitude,currentSite.longitude),radius=currentSite.geo_radius_meters||100;if(dist<=radius){document.getElementById('gpsDot').className='gps-dot ok';document.getElementById('gpsText').textContent=`✓ Location confirmed · ${Math.round(dist)}m from site`;document.getElementById('gpsText').className='gps-text ok';document.getElementById('siteConfirmLabel')&&(document.getElementById('siteConfirmLabel').textContent=isOut?'✓ Clocking out from':'✓ You are at');document.getElementById('siteConfirmName').textContent=currentSite.name;document.getElementById('siteConfirmBox').style.display='block';document.getElementById('gpsNextBtn').disabled=false;}else{document.getElementById('gpsDot').className='gps-dot error';document.getElementById('gpsText').textContent=`⚠ You are ${Math.round(dist)}m away from ${currentSite.name}`;document.getElementById('gpsText').className='gps-text error';}},err=>{document.getElementById('gpsDot').className='gps-dot error';document.getElementById('gpsText').textContent=err.code===1?'Location access denied — please allow location':'Could not get location';document.getElementById('gpsText').className='gps-text error';},{enableHighAccuracy:true,timeout:15000});}
 function afterGpsConfirm(){if(scanMode==='out'){if(!isTokenValid('out')){toast('⚠ Session expired — try again','warn');show('mainScreen');return;}document.getElementById('pinEmpIdDisplay').textContent=`${currentGuard.name||'Employee'} · ID ${currentGuard.employee_id}`;pinEntry='';updateDots();document.getElementById('pinErr').style.display='none';show('pinScreen');}else{if(!isTokenValid('in')){toast('⚠ Session expired — scan QR again','warn');show('mainScreen');return;}if(currentGuard){document.getElementById('pinEmpIdDisplay').textContent=`${currentGuard.name||'Employee'} · ID ${currentGuard.employee_id}`;pinEntry='';updateDots();document.getElementById('pinErr').style.display='none';show('pinScreen');}else{show('setupScreen1');}}}
-async function setupStep2(){const name=document.getElementById('setupName').value.trim(),empId=document.getElementById('setupEmpId').value.trim(),code=document.getElementById('setupCompanyCode').value.trim().toUpperCase();if(!name){toast('⚠ Enter your full name','warn');return;}if(!empId){toast('⚠ Enter your employee ID','warn');return;}if(!code){toast('⚠ Enter your company code','warn');return;}loading(true,'Verifying company code...');try{const companies=await db.query('companies','GET',null,`?guard_code=eq.${code}`);if(!companies||!companies.length){loading(false);toast('⚠ Invalid company code — ask your manager','error');return;}window._setupCompany=companies[0];loading(false);setupPin1='';setupPin2='';updateSetupDots1();show('setupScreen2');}catch(e){loading(false);toast('⚠ Could not verify code. Try again.','error');}}
+async function setupStep2(){
+  const empId=document.getElementById('setupEmpId').value.trim();
+  if(!empId){toast('⚠ Enter your employee ID','warn');return;}
+  loading(true,'Looking you up...');
+  try{
+    const existing=await db.query('guards','GET',null,`?employee_id=eq.${empId}&limit=1`);
+    if(existing&&existing.length){
+      // Returning guard — skip company code and PIN creation, go straight to PIN entry
+      currentGuard=existing[0];
+      loading(false);
+      document.getElementById('pinEmpIdDisplay').textContent=`${currentGuard.name||'Employee'} · ID ${currentGuard.employee_id}`;
+      pinEntry='';updateDots();document.getElementById('pinErr').style.display='none';
+      show('pinScreen');
+    }else{
+      // New guard — require name and company code
+      const name=document.getElementById('setupName').value.trim();
+      const code=document.getElementById('setupCompanyCode').value.trim().toUpperCase();
+      if(!name){loading(false);toast('⚠ Enter your full name','warn');return;}
+      if(!code){loading(false);toast('⚠ Enter your company code — ask your manager','warn');return;}
+      const companies=await db.query('companies','GET',null,`?guard_code=eq.${code}`);
+      if(!companies||!companies.length){loading(false);toast('⚠ Invalid company code — ask your manager','error');return;}
+      window._setupCompany=companies[0];
+      loading(false);setupPin1='';setupPin2='';updateSetupDots1();show('setupScreen2');
+    }
+  }catch(e){loading(false);toast('⚠ Could not verify. Try again.','error');}
+}
 function setupNumTap(n){if(setupPin1.length>=4)return;setupPin1+=n;updateSetupDots1();if(setupPin1.length===4)setTimeout(()=>show('setupScreen3'),200);}
 function setupPinBack(step){if(step===1){setupPin1=setupPin1.slice(0,-1);updateSetupDots1();}else{setupPin2=setupPin2.slice(0,-1);updateSetupDots2();}}
 function updateSetupDots1(){for(let i=0;i<4;i++)document.getElementById(`sp1_${i}`).className='pin-dot'+(i<setupPin1.length?' filled':'');}
@@ -485,7 +511,7 @@ function updateSetupDots2(){for(let i=0;i<4;i++)document.getElementById(`sp2_${i
 async function setupConfirmTap(n){if(setupPin2.length>=4)return;setupPin2+=n;updateSetupDots2();if(setupPin2.length===4){if(setupPin2!==setupPin1){document.getElementById('pinMismatch').style.display='block';for(let i=0;i<4;i++)document.getElementById(`sp2_${i}`).className='pin-dot error';setTimeout(()=>{setupPin2='';updateSetupDots2();document.getElementById('pinMismatch').style.display='none';},900);return;}await completeSetup();}}
 
 async function completeSetup(){
-  const name=document.getElementById('setupName').value.trim(),empId=document.getElementById('setupEmpId').value.trim(),company=window._setupCompany?window._setupCompany.name:'default';
+  const name=document.getElementById('setupName').value.trim(),empId=document.getElementById('setupEmpId').value.trim(),company=window._setupCompany?window._setupCompany.name:currentSite?.company||'default';
   if(!isTokenValid('in')){toast('⚠ Session expired — scan QR again','warn');show('mainScreen');return;}
   loading(true,'Creating your account...');
   try{
