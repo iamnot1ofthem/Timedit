@@ -435,25 +435,16 @@ async function createAccount(){
     const[pinHash,pwHash]=await Promise.all([hash(pin),hash(pw+'timedit_salt_2026')]);
 
     // Create company
-    await db.query('companies','POST',{
-      name:companyName,
-      supervisor_code:supCode,
-      guard_code:guardCode,
-      grace_period_minutes:15,
-      plan:selectedPlan,
-      status:'active'
-    });
+    const companyPayload={name:companyName,supervisor_code:supCode,guard_code:guardCode,grace_period_minutes:15,plan:selectedPlan,status:'active'};
+    console.log('[signup] company payload:', JSON.stringify(companyPayload));
+    await db.query('companies','POST',companyPayload);
+    console.log('[signup] company insert OK');
 
     // Create supervisor account
-    await db.query('guards','POST',{
-      employee_id:empId,
-      name:supName,
-      email:email,
-      password_hash:pwHash,
-      pin:pinHash,
-      company:companyName,
-      role:'supervisor'
-    });
+    const guardPayload={employee_id:empId,name:supName,email:email,password_hash:pwHash,pin:pinHash,company:companyName,role:'supervisor'};
+    console.log('[signup] guard payload:', JSON.stringify({...guardPayload,password_hash:'[hashed]',pin:'[hashed]'}));
+    await db.query('guards','POST',guardPayload);
+    console.log('[signup] guard insert OK');
 
     // Save session so dashboard loads immediately
     localStorage.setItem('td_sup',JSON.stringify({name:supName,employee_id:empId,company:companyName,role:'supervisor'}));
@@ -481,7 +472,9 @@ async function createAccount(){
     document.getElementById('successScreen').style.display='block';
 
   }catch(e){
-    console.error('createAccount error:',e);
+    console.error('[signup] createAccount FAILED');
+    console.error('[signup] error message:', e.message);
+    try{console.error('[signup] error parsed:', JSON.parse(e.message));}catch(_){console.error('[signup] raw error:', e.message);}
     let msg='⚠ Something went wrong — please try again';
     if(e.message&&e.message.includes('duplicate'))msg='⚠ Duplicate detected — please try a slightly different company name';
     else if(e.message&&e.message.includes('violates'))msg='⚠ Setup error — please refresh and try again';
