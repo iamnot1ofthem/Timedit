@@ -743,7 +743,7 @@ const zonesBySite={};(zones||[]).forEach(z=>{if(!zonesBySite[z.site_id])zonesByS
 list.innerHTML=allSites.map(s=>{
 const siteZones=zonesBySite[s.id]||[];
 const zonesHtml=siteZones.length?`<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><div style="font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Zones (${siteZones.length})</div>${siteZones.map(z=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;margin-bottom:6px"><div><div style="font-size:13px;font-weight:700">${z.name}</div><div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:2px">${z.latitude}, ${z.longitude} · ${z.geo_radius_meters}m radius</div></div><div style="display:flex;gap:6px"><button class="btn-sm blue" onclick="generateQR('${z.id}','${s.name}','${z.name}','zone')">⊡ QR</button><button class="btn-sm red" onclick="deleteZone('${z.id}')">✕</button></div></div>`).join('')}</div>`:'<div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">No zones — add zones for large sites like stadiums, campuses, or buildings.</div>';
-return`<div class="site-card"><div class="site-name">${s.name}</div><div class="site-meta">${s.site_number||'No site number'} · GPS: ${s.latitude}, ${s.longitude} · Radius: ${s.geo_radius_meters}m</div><div class="site-actions"><button class="btn-sm green" onclick="generateQR('${s.id}','${s.name}','${s.site_number||''}','site')">⊡ Site QR</button><button class="btn-sm blue" onclick="openZoneForm('${s.id}','${s.name}')">+ Add Zone</button></div>${zonesHtml}</div>`;
+return`<div class="site-card" id="siteCard-${s.id}"><div class="site-name">${s.name}</div><div class="site-meta">${s.site_number||'No site number'} · GPS: ${s.latitude}, ${s.longitude} · Radius: ${s.geo_radius_meters}m</div><div class="site-actions"><button class="btn-sm green" onclick="generateQR('${s.id}','${s.name}','${s.site_number||''}','site')">⊡ Site QR</button><button class="btn-sm blue" onclick="openZoneForm('${s.id}','${s.name}')">+ Add Zone</button><button class="btn-sm" onclick="openEditSite('${s.id}')">✎ Edit</button><button class="btn-sm red" onclick="deleteSite('${s.id}','${s.name}')">✕ Delete</button></div>${zonesHtml}</div>`;
 }).join('');}catch(e){console.log('Sites load error',e);}}
 function toggleAddSite(){document.getElementById('addSiteForm').classList.toggle('open');}
 async function addSite(){const name=document.getElementById('newSiteName').value.trim(),num=document.getElementById('newSiteNum').value.trim(),lat=parseFloat(document.getElementById('newSiteLat').value),lng=parseFloat(document.getElementById('newSiteLng').value),radius=parseInt(document.getElementById('newSiteRadius').value)||100;if(!name||isNaN(lat)||isNaN(lng)){toast('⚠ Fill in all required fields','warn');return;}loading(true,'Adding site...');try{await db.query('sites','POST',{name,site_number:num,latitude:lat,longitude:lng,geo_radius_meters:radius,company:currentCompany.name});loading(false);toast('✓ Site added','success');document.getElementById('addSiteForm').classList.remove('open');['newSiteName','newSiteNum','newSiteLat','newSiteLng'].forEach(id=>document.getElementById(id).value='');document.getElementById('newSiteRadius').value='100';loadSites();}catch(e){loading(false);toast('⚠ Could not add site','error');}}
@@ -751,6 +751,49 @@ function openZoneForm(siteId,siteName){document.getElementById('zoneFormSiteId')
 function closeZoneForm(){document.getElementById('addZoneForm').classList.remove('open');['newZoneName','newZoneLat','newZoneLng'].forEach(id=>document.getElementById(id).value='');document.getElementById('newZoneRadius').value='50';}
 async function addZone(){const siteId=document.getElementById('zoneFormSiteId').value,siteName=document.getElementById('zoneFormSiteName').textContent,name=document.getElementById('newZoneName').value.trim(),lat=parseFloat(document.getElementById('newZoneLat').value),lng=parseFloat(document.getElementById('newZoneLng').value),radius=parseInt(document.getElementById('newZoneRadius').value)||50;if(!name||isNaN(lat)||isNaN(lng)){toast('⚠ Fill in all required fields','warn');return;}loading(true,'Adding zone...');try{await db.query('zones','POST',{site_id:siteId,site_name:siteName,name,latitude:lat,longitude:lng,geo_radius_meters:radius,company:currentCompany.name});loading(false);toast(`✓ Zone "${name}" added`,'success');closeZoneForm();loadSites();}catch(e){loading(false);toast('⚠ Could not add zone','error');}}
 async function deleteZone(zoneId){if(!confirm('Delete this zone?'))return;loading(true,'Deleting...');try{await db.query('zones','DELETE',null,`?id=eq.${zoneId}`);loading(false);toast('✓ Zone deleted','success');loadSites();}catch(e){loading(false);toast('⚠ Could not delete zone','error');}}
+
+function openEditSite(siteId){
+  const s=allSites.find(x=>x.id===siteId);
+  if(!s)return;
+  const card=document.getElementById('siteCard-'+siteId);
+  if(!card)return;
+  card.innerHTML=`
+    <div style="font-size:15px;font-weight:700;margin-bottom:12px">Edit Site</div>
+    <div class="form-grid" style="margin-bottom:12px">
+      <div class="field"><label class="field-label">Site Name</label><input class="field-input" id="eSiteName-${siteId}" value="${s.name.replace(/"/g,'&quot;')}" /></div>
+      <div class="field"><label class="field-label">Site Number</label><input class="field-input" id="eSiteNum-${siteId}" value="${(s.site_number||'').replace(/"/g,'&quot;')}" /></div>
+      <div class="field"><label class="field-label">Latitude</label><input class="field-input" id="eSiteLat-${siteId}" type="number" step="any" value="${s.latitude}" /></div>
+      <div class="field"><label class="field-label">Longitude</label><input class="field-input" id="eSiteLng-${siteId}" type="number" step="any" value="${s.longitude}" /></div>
+      <div class="field"><label class="field-label">GPS Radius (m)</label><input class="field-input" id="eSiteRadius-${siteId}" type="number" value="${s.geo_radius_meters}" /></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-green" onclick="saveSiteEdit('${siteId}')" style="flex:1;padding:11px">Save</button>
+      <button class="btn btn-ghost" onclick="loadSites()" style="flex:1;padding:11px">Cancel</button>
+    </div>`;
+}
+
+async function saveSiteEdit(siteId){
+  const name=document.getElementById('eSiteName-'+siteId).value.trim();
+  const num=document.getElementById('eSiteNum-'+siteId).value.trim();
+  const lat=parseFloat(document.getElementById('eSiteLat-'+siteId).value);
+  const lng=parseFloat(document.getElementById('eSiteLng-'+siteId).value);
+  const radius=parseInt(document.getElementById('eSiteRadius-'+siteId).value)||100;
+  if(!name||isNaN(lat)||isNaN(lng)){toast('⚠ Fill in all required fields','warn');return;}
+  loading(true,'Saving...');
+  try{
+    await db.query('sites','PATCH',{name,site_number:num,latitude:lat,longitude:lng,geo_radius_meters:radius},`?id=eq.${siteId}`);
+    loading(false);toast('✓ Site updated','success');loadSites();
+  }catch(e){loading(false);toast('⚠ Could not update site','error');}
+}
+
+async function deleteSite(siteId,siteName){
+  if(!confirm(`Delete "${siteName}"? This cannot be undone.`))return;
+  loading(true,'Deleting...');
+  try{
+    await db.query('sites','DELETE',null,`?id=eq.${siteId}`);
+    loading(false);toast('✓ Site deleted','success');loadSites();
+  }catch(e){loading(false);toast('⚠ Could not delete site','error');}
+}
 function generateQR(id,siteName,label,type){const url=type==='zone'?`https://timedit.app/guard?zone=${id}`:`https://timedit.app/guard?site=${id}`;const win=window.open('','_blank');win.document.write(`<!DOCTYPE html><html><head><title>QR - ${siteName}${type==='zone'?' · '+label:''}</title><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script><style>body{font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:#fff;gap:16px;padding:32px}h1{font-size:24px;font-weight:800;margin:0}.zone-badge{background:#3B82F6;color:#fff;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:100px}.sub{font-size:12px;color:#666;letter-spacing:2px;text-transform:uppercase}.hint{font-size:11px;color:#999;text-align:center;max-width:220px;line-height:1.6}button{background:#3B82F6;color:#fff;border:none;padding:12px 24px;font-size:14px;font-weight:700;border-radius:8px;cursor:pointer;margin-top:8px}@media print{button{display:none}}</style></head><body><div style="font-size:28px;font-weight:800">Time<span style="color:#3B82F6">dit</span></div><div id="qr"></div><h1>${siteName}</h1>${type==='zone'?`<div class="zone-badge">${label}</div>`:`<div class="sub">${label}</div>`}<div class="hint">Scan to clock in or out at this location</div><button onclick="window.print()">🖨 Print</button><script>new QRCode(document.getElementById('qr'),{text:'${url}',width:220,height:220,colorDark:'#07090C',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});<\/script></body></html>`);}
 
 async function loadGuards(){try{const guards=await db.query('guards','GET',null,`?company=eq.${currentCompany.name}&order=name.asc`);allGuards=guards||[];const list=document.getElementById('guardsList');if(!allGuards.length){list.innerHTML='<div class="empty-state">No guards registered yet</div>';return;}list.innerHTML=allGuards.map(g=>`<div class="guard-row"><div><div class="guard-row-name">${g.name||'Guard '+g.employee_id}</div><div class="guard-row-meta">ID ${g.employee_id} · <span class="role-badge ${g.role||'guard'}">${g.role||'guard'}</span></div></div><div class="guard-row-actions"><button class="btn-sm" onclick="openResetPin('${g.id}','${g.name||'Guard '+g.employee_id}')">Reset PIN</button></div></div>`).join('');}catch(e){console.log('Guards load error',e);}}
@@ -844,10 +887,13 @@ async function loadAlertSettings(){
 }
 
 async function saveAlertSettings(){
-  const phone=document.getElementById('settingsPhone').value.trim();
+  const phoneRaw=document.getElementById('settingsPhone').value.trim();
   const grace=parseInt(document.getElementById('settingsGrace').value)||15;
   const tz=document.getElementById('settingsTimezone').value;
-  if(!phone){toast('⚠ Enter a phone number','warn');return;}
+  if(!phoneRaw){toast('⚠ Enter a phone number','warn');return;}
+  const digits=phoneRaw.replace(/\D/g,'');
+  if(digits.length<10){toast('⚠ Enter a valid 10-digit phone number','warn');return;}
+  const phone=digits.length===11&&digits[0]==='1'?'+'+digits:'+1'+digits.slice(-10);
   loading(true,'Saving...');
   try{
     await db.query('companies','PATCH',{supervisor_phone:phone,grace_period_minutes:grace,timezone:tz},`?id=eq.${currentCompany.id}`);
