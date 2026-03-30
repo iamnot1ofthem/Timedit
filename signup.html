@@ -156,16 +156,6 @@ nav{position:relative;z-index:10;padding:20px 40px;display:flex;align-items:cent
             <input class="field-input" id="email" type="email" placeholder="you@company.com" autocomplete="email" />
             <div class="field-error" id="eEmail">Please enter a valid email</div>
           </div>
-          <div class="field">
-            <label class="field-label">Password</label>
-            <div class="password-wrap">
-              <input class="field-input" id="password" type="password" placeholder="Min. 8 characters..." autocomplete="new-password" oninput="checkStrength(this.value)" />
-              <button class="pw-toggle" type="button" onclick="togglePw('password',this)">show</button>
-            </div>
-            <div class="strength-bar"><div class="strength-seg" id="sb1"></div><div class="strength-seg" id="sb2"></div><div class="strength-seg" id="sb3"></div><div class="strength-seg" id="sb4"></div></div>
-            <div class="strength-label" id="strengthLabel"></div>
-            <div class="field-error" id="ePassword">Password must be at least 8 characters</div>
-          </div>
           <button class="btn btn-primary" onclick="goStep2()">Continue →</button>
         </div>
 
@@ -296,21 +286,6 @@ function togglePw(id,btn){
   btn.textContent=show?'hide':'show';
 }
 
-function checkStrength(pw){
-  const segs=[1,2,3,4].map(i=>document.getElementById(`sb${i}`));
-  const lbl=document.getElementById('strengthLabel');
-  let score=0;
-  if(pw.length>=8)score++;
-  if(pw.length>=12)score++;
-  if(/[A-Z]/.test(pw)&&/[0-9]/.test(pw))score++;
-  if(/[^A-Za-z0-9]/.test(pw))score++;
-  const colors=['#FF4565','#ff9800','#3B82F6','#10FF8A'];
-  const labels=['Weak','Fair','Good','Strong'];
-  segs.forEach((s,i)=>{s.style.background=i<score?colors[score-1]:'var(--border)';});
-  lbl.textContent=pw.length>0?(labels[score-1]||''):'';
-  lbl.style.color=pw.length>0?colors[score-1]:'var(--muted)';
-}
-
 function clearErrs(){
   document.querySelectorAll('.field-error').forEach(e=>e.classList.remove('show'));
   document.querySelectorAll('.field-input').forEach(e=>e.classList.remove('error'));
@@ -352,13 +327,11 @@ async function goStep2(){
   const guardCode=document.getElementById('guardCodeInput').value.trim().toUpperCase();
   const name=document.getElementById('supName').value.trim();
   const email=document.getElementById('email').value.trim();
-  const pw=document.getElementById('password').value;
   let ok=true;
   if(!company){markErr('companyName','eCompany');ok=false;}
   if(!guardCode||/\s/.test(guardCode)){markErr('guardCodeInput','eGuardCode');ok=false;}
   if(!name){markErr('supName','eName');ok=false;}
   if(!email||!email.includes('@')||!email.includes('.')){markErr('email','eEmail');ok=false;}
-  if(pw.length<8){markErr('password','ePassword');ok=false;}
   if(!ok)return;
 
   const btn=document.querySelector('#step1 .btn-primary');
@@ -424,7 +397,6 @@ async function createAccount(){
     const companyName=document.getElementById('companyName').value.trim();
     const supName=document.getElementById('supName').value.trim();
     const email=document.getElementById('email').value.trim().toLowerCase();
-    const pw=document.getElementById('password').value;
 
     // Generate supervisor code; guard code is chosen by manager
     btn.textContent='Setting up your company...';
@@ -432,19 +404,23 @@ async function createAccount(){
     const supCode=await genUniqueCode(companyName,'SUP','supervisor_code');
 
     btn.textContent='Creating your company...';
-    const[pinHash,pwHash]=await Promise.all([hash(pin),hash(pw+'timedit_salt_2026')]);
+    const pinHash=await hash(pin);
 
     // Create company
     const companyPayload={name:companyName,supervisor_code:supCode,guard_code:guardCode,grace_period_minutes:15,plan:selectedPlan,status:'active'};
-    console.log('[signup] company payload:', JSON.stringify(companyPayload));
-    await db.query('companies','POST',companyPayload);
-    console.log('[signup] company insert OK');
+    const companyResult=await db.query('companies','POST',companyPayload);
+    const companyId=companyResult[0].id;
 
-    // Create supervisor account
-    const guardPayload={employee_id:empId,name:supName,email:email,password_hash:pwHash,pin:pinHash,company:companyName,role:'supervisor'};
-    console.log('[signup] guard payload:', JSON.stringify({...guardPayload,password_hash:'[hashed]',pin:'[hashed]'}));
-    await db.query('guards','POST',guardPayload);
-    console.log('[signup] guard insert OK');
+    // Create supervisor account — if this fails, roll back by deleting the company
+    let guardOk=false;
+    try{
+      const guardPayload={employee_id:empId,name:supName,email:email,pin:pinHash,company:companyName,role:'supervisor'};
+      await db.query('guards','POST',guardPayload);
+      guardOk=true;
+    }catch(guardErr){
+      try{await db.query('companies','DELETE',null,`?id=eq.${companyId}`);}catch(_){}
+      throw guardErr;
+    }
 
     // Save session so dashboard loads immediately
     localStorage.setItem('td_sup',JSON.stringify({name:supName,employee_id:empId,company:companyName,role:'supervisor'}));
@@ -500,11 +476,12 @@ async function resendEmail(){
   const btn=document.getElementById('resendBtn');
   btn.textContent='Sending...';btn.disabled=true;
   try{
-    await fetch(`${EDGE_URL}/send-welcome-email`,{
+    const res=await fetch(`${EDGE_URL}/send-welcome-email`,{
       method:'POST',
       headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON},
       body:JSON.stringify({email:signupEmail,supervisorName:signupName,companyName:signupCompany,supervisorCode:createdSupCode,guardCode:createdGuardCode,plan:selectedPlan})
     });
+    if(!res.ok)throw new Error(`HTTP ${res.status}`);
     btn.textContent='✓ Sent!';
     setTimeout(()=>{btn.textContent='Resend codes to email';btn.disabled=false;},3000);
   }catch(e){

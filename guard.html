@@ -449,7 +449,7 @@ function toast(msg,type='success'){const t=document.getElementById('toast');t.te
 function createToken(siteId,mode){sessionToken={token:Math.random().toString(36).substr(2)+Date.now(),expires:Date.now()+TOKEN_DURATION,siteId,mode};startTokenCountdown();}
 function isTokenValid(mode){if(!sessionToken)return false;if(sessionToken.mode!==mode)return false;if(Date.now()>sessionToken.expires){sessionToken=null;return false;}return true;}
 function consumeToken(){sessionToken=null;clearInterval(tokenTimer);}
-function startTokenCountdown(){clearInterval(tokenTimer);const box=document.getElementById('tokenBox'),cd=document.getElementById('tokenCountdown');if(box)box.style.display='flex';tokenTimer=setInterval(()=>{if(!sessionToken){clearInterval(tokenTimer);if(box)box.style.display='none';return;}const remaining=sessionToken.expires-Date.now();if(remaining<=0){clearInterval(tokenTimer);sessionToken=null;if(box)box.style.display='none';toast('⚠ Session expired — scan QR again','warn');show('mainScreen');return;}const m=Math.floor(remaining/60000),s=Math.floor((remaining%60000)/1000);if(cd)cd.textContent=`${m}:${pad(s)}`;},1000);}
+function startTokenCountdown(){clearInterval(tokenTimer);const box=document.getElementById('tokenBox'),cd=document.getElementById('tokenCountdown');if(box)box.style.display='flex';tokenTimer=setInterval(()=>{if(!sessionToken){clearInterval(tokenTimer);if(box)box.style.display='none';return;}const remaining=sessionToken.expires-Date.now();if(remaining<=0){const expiredMode=sessionToken.mode;clearInterval(tokenTimer);sessionToken=null;if(box)box.style.display='none';toast(expiredMode==='out'?'⚠ Session expired — tap Clock Out again':'⚠ Session expired — scan QR again','warn');show('mainScreen');return;}const m=Math.floor(remaining/60000),s=Math.floor((remaining%60000)/1000);if(cd)cd.textContent=`${m}:${pad(s)}`;},1000);}
 window.addEventListener('beforeunload',()=>{consumeToken();});
 function startClockInScan(){scanMode='in';startScan();}
 function startClockOutScan(){scanMode='out';startScan();}
@@ -460,7 +460,7 @@ async function startClockOut(){
   try{
     if(currentShift.zone_id){
       const zones=await db.query('zones','GET',null,`?id=eq.${currentShift.zone_id}`);
-      if(zones&&zones.length){const z=zones[0];currentSite={id:z.site_id,name:z.site_name,displayName:`${z.site_name} · ${z.name}`,latitude:z.latitude,longitude:z.longitude,geo_radius_meters:z.geo_radius_meters,zoneId:z.id,zoneName:z.name};}
+      if(zones&&zones.length){const z=zones[0];currentSite={id:z.site_id,name:z.site_name,displayName:`${z.site_name} · ${z.name}`,latitude:z.latitude,longitude:z.longitude,geo_radius_meters:z.geo_radius_meters,zoneId:z.id,zoneName:z.name,company:z.company};}
     }else{
       const sites=await db.query('sites','GET',null,`?name=eq.${encodeURIComponent(currentShift.site_name)}&company=eq.${encodeURIComponent(currentGuard.company)}&limit=1`);
       if(sites&&sites.length){currentSite=sites[0];currentSite.displayName=sites[0].name;}
@@ -483,10 +483,24 @@ async function setupStep2(){
   if(!empId){toast('⚠ Enter your employee ID','warn');return;}
   loading(true,'Looking you up...');
   try{
-    const existing=await db.query('guards','GET',null,`?employee_id=eq.${empId}&limit=1`);
-    if(existing&&existing.length){
-      // Returning guard — skip company code and PIN creation, go straight to PIN entry
+    // Fetch all guards with this employee ID (no limit — need to detect cross-company duplicates)
+    const existing=await db.query('guards','GET',null,`?employee_id=eq.${empId}`);
+    if(existing&&existing.length===1){
+      // Exactly one match — safe to proceed directly to PIN
       currentGuard=existing[0];
+      loading(false);
+      document.getElementById('pinEmpIdDisplay').textContent=`${currentGuard.name||'Employee'} · ID ${currentGuard.employee_id}`;
+      pinEntry='';updateDots();document.getElementById('pinErr').style.display='none';
+      show('pinScreen');
+    }else if(existing&&existing.length>1){
+      // Multiple guards share this employee ID across companies — need company code to disambiguate
+      const code=document.getElementById('setupCompanyCode').value.trim().toUpperCase();
+      if(!code){loading(false);toast('⚠ Multiple accounts found with this ID — enter your company code to continue','warn');return;}
+      const companies=await db.query('companies','GET',null,`?guard_code=eq.${code}`);
+      if(!companies||!companies.length){loading(false);toast('⚠ Invalid company code — ask your manager','error');return;}
+      const matched=existing.find(g=>g.company===companies[0].name);
+      if(!matched){loading(false);toast('⚠ No account found for this ID and company code','error');return;}
+      currentGuard=matched;
       loading(false);
       document.getElementById('pinEmpIdDisplay').textContent=`${currentGuard.name||'Employee'} · ID ${currentGuard.employee_id}`;
       pinEntry='';updateDots();document.getElementById('pinErr').style.display='none';
@@ -511,18 +525,24 @@ function updateSetupDots2(){for(let i=0;i<4;i++)document.getElementById(`sp2_${i
 async function setupConfirmTap(n){if(setupPin2.length>=4)return;setupPin2+=n;updateSetupDots2();if(setupPin2.length===4){if(setupPin2!==setupPin1){document.getElementById('pinMismatch').style.display='block';for(let i=0;i<4;i++)document.getElementById(`sp2_${i}`).className='pin-dot error';setTimeout(()=>{setupPin2='';updateSetupDots2();document.getElementById('pinMismatch').style.display='none';},900);return;}await completeSetup();}}
 
 async function completeSetup(){
-  const name=document.getElementById('setupName').value.trim(),empId=document.getElementById('setupEmpId').value.trim(),company=window._setupCompany?window._setupCompany.name:currentSite?.company||'default';
+  const name=document.getElementById('setupName').value.trim(),empId=document.getElementById('setupEmpId').value.trim(),company=window._setupCompany?window._setupCompany.name:currentSite?.company||'';
+  if(!company){loading(false);toast('⚠ Could not determine your company — ask your manager for the company code','error');show('mainScreen');return;}
   if(!isTokenValid('in')){toast('⚠ Session expired — scan QR again','warn');show('mainScreen');return;}
   loading(true,'Creating your account...');
   try{
     // Hash the PIN before storing
     const pinHash = await hashPin(setupPin1);
-    const existing=await db.query('guards','GET',null,`?employee_id=eq.${empId}`);
+    const existing=await db.query('guards','GET',null,`?employee_id=eq.${empId}&company=eq.${encodeURIComponent(company)}`);
     let guard;
     if(existing&&existing.length){
       guard=existing[0];
-      // Compare hashed PINs
-      if(guard.pin !== pinHash){loading(false);toast('⚠ Employee ID already taken','error');return;}
+      // Employee ID already registered in this company — they must use the same PIN
+      if(guard.pin !== pinHash){
+        loading(false);
+        toast('⚠ This Employee ID is already registered — use the PIN you set up previously','error');
+        setupPin1='';setupPin2='';updateSetupDots1();show('setupScreen2');
+        return;
+      }
     }else{
       const result=await db.query('guards','POST',{employee_id:empId,pin:pinHash,name,company,role:'guard'});
       guard=result[0];
@@ -552,10 +572,10 @@ async function checkPin(){
   if(scanMode==='out'){showClockOutConfirm();}else{showClockInConfirm();}
 }
 
-function showClockInConfirm(){document.getElementById('clockInSiteName').textContent=currentSite.displayName||currentSite.name;document.getElementById('clockInEmpName').textContent=currentGuard.name||`Employee ${currentGuard.employee_id}`;if(currentShift){show('mainScreen');updateDashboard();return;}show('clockInScreen');}
+function showClockInConfirm(){document.getElementById('clockInSiteName').textContent=currentSite.displayName||currentSite.name;document.getElementById('clockInEmpName').textContent=currentGuard.name||`Employee ${currentGuard.employee_id}`;if(currentShift){consumeToken();show('mainScreen');updateDashboard();return;}show('clockInScreen');}
 async function doClockIn(){if(!currentSite||!currentGuard)return;if(!isTokenValid('in')){toast('⚠ Session expired — scan QR again','warn');show('mainScreen');return;}const activeShifts=await db.query('shifts','GET',null,`?guard_id=eq.${currentGuard.id}&clock_out=is.null`);if(activeShifts&&activeShifts.length){currentShift=activeShifts[0];localStorage.setItem('td_shift',JSON.stringify(currentShift));consumeToken();show('mainScreen');updateDashboard();toast('⚠ You are already clocked in','warn');return;}loading(true,'Clocking in...');try{const shiftData={guard_id:currentGuard.id,guard_name:currentGuard.name||`Employee ${currentGuard.employee_id}`,site_name:currentSite.displayName||currentSite.name,site_number:currentSite.site_number||'',clock_in:new Date().toISOString(),company:currentGuard.company||'default',clock_in_lat:userCoords?.lat||null,clock_in_lng:userCoords?.lng||null};if(currentSite.zoneId){shiftData.zone_id=currentSite.zoneId;shiftData.zone_name=currentSite.zoneName;}const result=await db.query('shifts','POST',shiftData);currentShift=result[0];localStorage.setItem('td_shift',JSON.stringify(currentShift));consumeToken();loading(false);show('mainScreen');updateDashboard();toast(`✓ Clocked in · ${currentSite.displayName||currentSite.name}`,'success');}catch(e){loading(false);toast('⚠ Could not clock in. Try again.','error');}}
 function showClockOutConfirm(){if(!currentShift){toast('⚠ You are not clocked in','warn');show('mainScreen');return;}document.getElementById('clockOutSiteName').textContent=currentShift.site_name;const dur=Date.now()-new Date(currentShift.clock_in).getTime();document.getElementById('clockOutDuration').textContent=fmtDur(dur,true);show('clockOutScreen');}
-async function doClockOut(){if(!currentShift)return;if(!isTokenValid('out')){toast('⚠ Session expired — scan QR again','warn');show('mainScreen');return;}loading(true,'Clocking out...');try{const now=new Date().toISOString(),dur=Math.round((Date.now()-new Date(currentShift.clock_in).getTime())/60000);await db.query('shifts','PATCH',{clock_out:now,duration_minutes:dur},`?id=eq.${currentShift.id}`);consumeToken();toast(`✓ Clocked out · ${fmtDur(dur*60000)} logged`,'success');currentShift=null;localStorage.removeItem('td_shift');clearInterval(elapsedTimer);clearInterval(hoursTimer);show('mainScreen');updateDashboard();loading(false);}catch(e){loading(false);toast('⚠ Could not clock out. Try again.','error');}}
+async function doClockOut(){if(!currentShift)return;if(!isTokenValid('out')){toast('⚠ Session expired — tap Clock Out again','warn');show('mainScreen');return;}loading(true,'Clocking out...');try{const now=new Date().toISOString(),dur=Math.round((Date.now()-new Date(currentShift.clock_in).getTime())/60000);await db.query('shifts','PATCH',{clock_out:now,duration_minutes:dur},`?id=eq.${currentShift.id}`);consumeToken();toast(`✓ Clocked out · ${fmtDur(dur*60000)} logged`,'success');currentShift=null;localStorage.removeItem('td_shift');clearInterval(elapsedTimer);clearInterval(hoursTimer);show('mainScreen');updateDashboard();loading(false);}catch(e){loading(false);toast('⚠ Could not clock out. Try again.','error');}}
 async function updateDashboard(){if(!currentGuard)return;document.getElementById('greetName').textContent=currentGuard.name||`Employee ${currentGuard.employee_id}`;document.getElementById('greetId').textContent=`ID: ${currentGuard.employee_id}`;const card=document.getElementById('statusCard');clearInterval(elapsedTimer);clearInterval(hoursTimer);const btn=document.getElementById('btnClockOut'),hint=document.getElementById('clockOutHint');if(currentShift){card.classList.add('on');document.getElementById('sText').textContent='On Duty';document.getElementById('sSite').textContent=currentShift.site_name;btn.disabled=false;hint.style.display='block';const tick=()=>{const ms=Date.now()-new Date(currentShift.clock_in).getTime();document.getElementById('sElapsed').textContent=fmtDur(ms,true);};tick();elapsedTimer=setInterval(tick,1000);}else{card.classList.remove('on');document.getElementById('sText').textContent='Off Duty';document.getElementById('sSite').textContent='';document.getElementById('sElapsed').textContent='0:00:00';btn.disabled=true;hint.style.display='none';}try{const shifts=await db.query('shifts','GET',null,`?guard_id=eq.${currentGuard.id}&order=clock_in.desc&limit=30`);calcHours(shifts);renderShifts(shifts);if(currentShift){hoursTimer=setInterval(()=>calcHours(shifts),60000);}}catch(e){console.log('Could not load shifts',e);}}
 function calcHours(shifts){const now=Date.now(),todayStart=new Date();todayStart.setHours(0,0,0,0);const weekStart=new Date();weekStart.setDate(weekStart.getDate()-weekStart.getDay());weekStart.setHours(0,0,0,0);const periodStart=new Date();periodStart.setDate(1);periodStart.setHours(0,0,0,0);let tMs=0,wMs=0,pMs=0;const all=[...shifts];if(currentShift)all.unshift({clock_in:currentShift.clock_in,clock_out:null});all.forEach(s=>{const inT=new Date(s.clock_in).getTime(),outT=s.clock_out?new Date(s.clock_out).getTime():now,dur=outT-inT;if(inT>=todayStart.getTime())tMs+=dur;if(inT>=weekStart.getTime())wMs+=dur;if(inT>=periodStart.getTime())pMs+=dur;});document.getElementById('hToday').textContent=fmtDur(tMs);document.getElementById('hWeek').textContent=fmtDur(wMs);document.getElementById('hPeriod').textContent=fmtDur(pMs);}
 function renderShifts(shifts){const list=document.getElementById('shiftList');const all=[...shifts];if(currentShift)all.unshift({...currentShift,clock_out:null});if(!all.length){list.innerHTML='<div class="no-shifts">No shifts yet — scan a site QR code to clock in.</div>';return;}list.innerHTML=all.map(s=>{const live=!s.clock_out,dur=live?Date.now()-new Date(s.clock_in).getTime():s.duration_minutes*60000;return`<div class="shift-entry ${live?'active':'done'}"><div><div class="shift-site">${s.site_name}</div><div class="shift-time">IN ${fmtTime(new Date(s.clock_in))}${live?'':' · OUT '+fmtTime(new Date(s.clock_out))} · ${fmtDate(new Date(s.clock_in))}</div></div><div class="shift-dur ${live?'live':''}">${fmtDur(dur)}</div></div>`;}).join('');}
@@ -571,12 +591,30 @@ if(zoneParam){
     loading(false);
     if(zones&&zones.length){
       const z=zones[0];
-      currentSite={id:z.site_id,name:z.site_name,displayName:`${z.site_name} · ${z.name}`,latitude:z.latitude,longitude:z.longitude,geo_radius_meters:z.geo_radius_meters,zoneId:z.id,zoneName:z.name};
+      // For clock-out, verify the scanned zone matches where the guard clocked in
+      if(scanMode==='out'&&currentShift&&currentShift.zone_id&&currentShift.zone_id!==zoneParam){
+        toast('⚠ This QR code is for a different zone than where you clocked in','warn');
+        show('mainScreen');updateDashboard();return;
+      }
+      currentSite={id:z.site_id,name:z.site_name,displayName:`${z.site_name} · ${z.name}`,latitude:z.latitude,longitude:z.longitude,geo_radius_meters:z.geo_radius_meters,zoneId:z.id,zoneName:z.name,company:z.company};
       createToken(zoneParam,scanMode);startGpsVerify();
     }else{toast('⚠ Zone not found','error');show('mainScreen');updateDashboard();}
   }).catch(()=>{loading(false);show('mainScreen');updateDashboard();});
 }else if(siteParam){
-  scanMode=currentShift?'out':'in';loading(true,'Loading site...');db.query('sites','GET',null,`?id=eq.${siteParam}`).then(sites=>{loading(false);if(sites&&sites.length){currentSite=sites[0];currentSite.displayName=sites[0].name;createToken(siteParam,scanMode);startGpsVerify();}else{toast('⚠ Site not found','error');show('mainScreen');updateDashboard();}}).catch(()=>{loading(false);show('mainScreen');updateDashboard();});
+  scanMode=currentShift?'out':'in';
+  loading(true,'Loading site...');
+  db.query('sites','GET',null,`?id=eq.${siteParam}`).then(sites=>{
+    loading(false);
+    if(sites&&sites.length){
+      currentSite=sites[0];currentSite.displayName=sites[0].name;
+      // For clock-out, verify the scanned site matches where the guard clocked in
+      if(scanMode==='out'&&currentShift&&!currentShift.zone_id&&currentSite.name!==currentShift.site_name){
+        toast('⚠ This QR code is for a different site than where you clocked in','warn');
+        show('mainScreen');updateDashboard();return;
+      }
+      createToken(siteParam,scanMode);startGpsVerify();
+    }else{toast('⚠ Site not found','error');show('mainScreen');updateDashboard();}
+  }).catch(()=>{loading(false);show('mainScreen');updateDashboard();});
 }else if(currentGuard){show('mainScreen');updateDashboard();}else{show('landingScreen');}
 </script>
 </body>
