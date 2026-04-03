@@ -110,11 +110,11 @@ nav{position:relative;z-index:10;padding:20px 40px;display:flex;align-items:cent
     <div class="left">
       <div class="left-badge"><div class="left-badge-dot"></div>No credit card required</div>
       <h1>Your operation,<br><span>under control</span><br>in minutes.</h1>
-      <p class="left-sub">Set up your company, add your sites, and have guards clocking in with GPS verification today. No hardware. No app downloads required.</p>
+      <p class="left-sub">Set up your company, add your sites, and have employees clocking in with GPS verification today. No hardware. No app downloads required.</p>
       <div class="left-perks">
         <div class="perk"><div class="perk-icon">⊡</div><div>QR + GPS + PIN — three layers of verification on every clock-in</div></div>
-        <div class="perk"><div class="perk-icon">🟢</div><div>Live dashboard — see every guard's status in real time</div></div>
-        <div class="perk"><div class="perk-icon">🔔</div><div>SMS alerts when a guard is late or doesn't show up</div></div>
+        <div class="perk"><div class="perk-icon">🟢</div><div>Live dashboard — see every employee's status in real time</div></div>
+        <div class="perk"><div class="perk-icon">🔔</div><div>SMS alerts when an employee is late or doesn't show up</div></div>
         <div class="perk"><div class="perk-icon">📋</div><div>One-click payroll export with overtime auto-calculated</div></div>
       </div>
       <div class="trial-box"><strong>✓ Full access from day one</strong> — no credit card required to get started.<br>Plans start at just $49/month flat.</div>
@@ -141,10 +141,10 @@ nav{position:relative;z-index:10;padding:20px 40px;display:flex;align-items:cent
             <div class="field-error" id="eCompany">Please enter your company name</div>
           </div>
           <div class="field">
-            <label class="field-label">Guard Code</label>
+            <label class="field-label">Employee Code</label>
             <input class="field-input" id="guardCodeInput" type="text" placeholder="e.g. METRO2024" style="text-transform:uppercase" autocomplete="off" />
-            <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:4px">Guards will use this code to register — keep it simple.</div>
-            <div class="field-error" id="eGuardCode">Please enter a guard code (no spaces)</div>
+            <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:4px">Employees will use this code to register — keep it simple.</div>
+            <div class="field-error" id="eGuardCode">Please enter an employee code (no spaces)</div>
           </div>
           <div class="field">
             <label class="field-label">Your Full Name</label>
@@ -166,13 +166,13 @@ nav{position:relative;z-index:10;padding:20px 40px;display:flex;align-items:cent
             <div class="plan-option selected" id="planStarter" onclick="selectPlan('starter')">
               <div class="plan-name">Starter</div>
               <div class="plan-price">$49<span>/month</span></div>
-              <div class="plan-desc">Up to 15 guards · 3 sites</div>
+              <div class="plan-desc">Up to 15 employees · 3 sites</div>
             </div>
             <div class="plan-option" id="planGrowth" onclick="selectPlan('growth')">
               <div class="plan-badge">POPULAR</div>
               <div class="plan-name">Growth</div>
               <div class="plan-price">$99<span>/month</span></div>
-              <div class="plan-desc">Up to 40 guards · Unlimited sites · SMS alerts</div>
+              <div class="plan-desc">Up to 40 employees · Unlimited sites · SMS alerts</div>
             </div>
           </div>
           <div class="trial-note">✓ <strong style="color:var(--green)">No credit card required.</strong> Get started free and upgrade when you're ready.</div>
@@ -219,15 +219,15 @@ nav{position:relative;z-index:10;padding:20px 40px;display:flex;align-items:cent
           <div class="code-copy" id="supCopyLabel">📋 Click to copy</div>
         </div>
         <div class="code-box" onclick="copyCode('guard')" title="Click to copy">
-          <div class="code-label">Guard Code</div>
+          <div class="code-label">Employee Code</div>
           <div class="code-val" id="guardCodeDisplay">—</div>
-          <div class="code-hint">Guards enter this when registering on the clock-in page</div>
+          <div class="code-hint">Employees enter this when registering on the clock-in page</div>
           <div class="code-copy" id="guardCopyLabel">📋 Click to copy</div>
         </div>
         <div class="next-steps">
           <div class="next-step"><div class="next-step-num">1</div>Add your first site in the Sites tab</div>
           <div class="next-step"><div class="next-step-num">2</div>Print the QR code and post it at the site</div>
-          <div class="next-step"><div class="next-step-num">3</div>Have a guard register using the Guard Code above</div>
+          <div class="next-step"><div class="next-step-num">3</div>Have an employee register using the Employee Code above</div>
           <div class="next-step"><div class="next-step-num">4</div>Watch them clock in live on your dashboard</div>
         </div>
         <button class="btn btn-primary" onclick="goToDashboard()">→ Go to My Dashboard</button>

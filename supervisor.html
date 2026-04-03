@@ -217,7 +217,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
     <button class="tab" onclick="switchTab('schedule',this)">📅 Schedule</button>
     <button class="tab" onclick="switchTab('shifts',this)">📋 Shifts</button>
     <button class="tab" onclick="switchTab('sites',this)">📍 Sites</button>
-    <button class="tab" onclick="switchTab('guards',this)">👥 Guards</button>
+    <button class="tab" onclick="switchTab('guards',this)">👥 Employees</button>
     <button class="tab" onclick="switchTab('settings',this)">⚙️ Settings</button>
   </div>
 
@@ -229,9 +229,9 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
       <div class="stat-box"><div class="stat-val" id="statSites">0</div><div class="stat-key">Active Sites</div></div>
     </div>
     <div class="section-label">On Duty Now</div>
-    <div id="onDutyList"><div class="empty-state">No guards currently on duty</div></div>
+    <div id="onDutyList"><div class="empty-state">No employees currently on duty</div></div>
     <div class="section-label">Off Duty</div>
-    <div id="offDutyList"><div class="empty-state">No guards registered yet</div></div>
+    <div id="offDutyList"><div class="empty-state">No employees registered yet</div></div>
   </div>
 
   <div class="tab-panel" id="tab-schedule">
@@ -276,8 +276,8 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
           </div>
         </div>
         <div>
-          <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">FILTER GUARD</div>
-          <input class="filter-input" id="filterGuard" placeholder="All guards..." oninput="filterShifts()" style="min-width:160px" />
+          <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">FILTER EMPLOYEE</div>
+          <input class="filter-input" id="filterGuard" placeholder="All employees..." oninput="filterShifts()" style="min-width:160px" />
         </div>
         <div>
           <div style="font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:6px">FILTER SITE</div>
@@ -290,10 +290,10 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
     <div id="payrollSummaryCards" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px"></div>
 
     <!-- Guard Summary Table -->
-    <div style="font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px">HOURS BY GUARD</div>
+    <div style="font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px">HOURS BY EMPLOYEE</div>
     <div class="table-wrap" style="margin-bottom:16px">
       <table class="shifts-table">
-        <thead><tr><th>Guard</th><th>Employee ID</th><th>Shifts</th><th>Regular Hrs</th><th>OT Hrs (>40)</th><th>Total Hrs</th></tr></thead>
+        <thead><tr><th>Employee</th><th>Employee ID</th><th>Shifts</th><th>Regular Hrs</th><th>OT Hrs (>40)</th><th>Total Hrs</th></tr></thead>
         <tbody id="guardSummaryBody"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px;font-family:var(--mono);font-size:11px">Loading...</td></tr></tbody>
       </table>
     </div>
@@ -308,7 +308,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
     <div style="font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px">ALL SHIFT RECORDS</div>
     <div class="table-wrap">
       <table class="shifts-table">
-        <thead><tr><th>Guard</th><th>Site</th><th>Date</th><th>Clock In</th><th>Clock Out</th><th>Hours</th><th>Status</th></tr></thead>
+        <thead><tr><th>Employee</th><th>Site</th><th>Date</th><th>Clock In</th><th>Clock Out</th><th>Hours</th><th>Status</th></tr></thead>
         <tbody id="shiftsTableBody"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;font-family:var(--mono);font-size:11px">Loading shifts...</td></tr></tbody>
       </table>
     </div>
@@ -354,13 +354,13 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
   </div>
 
   <div class="tab-panel" id="tab-guards">
-    <div style="font-size:18px;font-weight:800;margin-bottom:16px">All Guards</div>
+    <div style="font-size:18px;font-weight:800;margin-bottom:16px">All Employees</div>
     <div id="guardsList"></div>
   </div>
 
   <div class="tab-panel" id="tab-settings">
     <div style="font-size:18px;font-weight:800;margin-bottom:6px">Alert Settings</div>
-    <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:24px">Get a text when a guard doesn't clock in on time.</div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:24px">Get a text when an employee doesn't clock in on time.</div>
     <div class="table-wrap" style="padding:20px;max-width:480px">
       <div class="field">
         <label class="field-label">Supervisor Phone Number</label>
@@ -370,7 +370,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
       <div class="field" style="margin-top:16px">
         <label class="field-label">Grace Period (minutes)</label>
         <input class="field-input" id="settingsGrace" type="number" min="1" max="60" placeholder="15" style="font-size:14px" />
-        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:4px">Alert fires this many minutes after shift start if guard hasn't clocked in.</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:4px">Alert fires this many minutes after shift start if an employee hasn't clocked in.</div>
       </div>
       <div class="field" style="margin-top:16px">
         <label class="field-label">Timezone</label>
@@ -410,7 +410,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
 <div class="modal-overlay" id="addShiftModal">
   <div class="modal">
     <div class="modal-title">Schedule a Shift</div>
-    <div class="field"><label class="field-label">Guard</label><select class="field-input" id="schedGuardSelect" style="font-size:13px"></select></div>
+    <div class="field"><label class="field-label">Employee</label><select class="field-input" id="schedGuardSelect" style="font-size:13px"></select></div>
     <div class="field"><label class="field-label">Site</label><select class="field-input" id="schedSiteSelect" style="font-size:13px"></select></div>
     <div class="field"><label class="field-label">Date</label><input class="field-input" id="schedDate" type="date" /></div>
     <div class="form-grid">
@@ -604,7 +604,7 @@ function renderSummaryCards(shifts){
   document.getElementById('payrollSummaryCards').innerHTML=`
     <div class="stat-box" style="flex:1;min-width:140px"><div class="stat-val" style="color:var(--accent)">${totalHrs}</div><div class="stat-key">Total Hours</div></div>
     <div class="stat-box" style="flex:1;min-width:140px"><div class="stat-val">${shifts.length}</div><div class="stat-key">Completed Shifts</div></div>
-    <div class="stat-box" style="flex:1;min-width:140px"><div class="stat-val">${guards}</div><div class="stat-key">Guards</div></div>
+    <div class="stat-box" style="flex:1;min-width:140px"><div class="stat-val">${guards}</div><div class="stat-key">Employees</div></div>
     <div class="stat-box" style="flex:1;min-width:200px"><div class="stat-val" style="font-size:13px;letter-spacing:0">${period}</div><div class="stat-key">Pay Period</div></div>
   `;
 }
@@ -709,12 +709,12 @@ function exportPayrollCSV(){
     [`Company:`,company],
     [`Pay Period:`,from,`to`,to],
     [`Export Date:`,exportDate],
-    [`Total Guards:`,Object.keys(map).length],
+    [`Total Employees:`,Object.keys(map).length],
     [`Total Shifts:`,shifts.length],
     [`Note:`,`Overtime calculated per calendar week (>40 hrs/week)`],
     [],
     [`--- PAYROLL SUMMARY ---`],
-    [`Guard Name`,`Employee ID`,`Total Shifts`,`Regular Hours (≤40/wk)`,`Overtime Hours (>40/wk)`,`Total Hours`],
+    [`Employee Name`,`Employee ID`,`Total Shifts`,`Regular Hours (≤40/wk)`,`Overtime Hours (>40/wk)`,`Total Hours`],
   ];
 
   Object.values(map).sort((a,b)=>{
@@ -726,7 +726,7 @@ function exportPayrollCSV(){
 
   rows.push([]);
   rows.push([`--- SHIFT DETAIL ---`]);
-  rows.push([`Guard Name`,`Employee ID`,`Site`,`Date`,`Clock In`,`Clock Out`,`Hours Worked`]);
+  rows.push([`Employee Name`,`Employee ID`,`Site`,`Date`,`Clock In`,`Clock Out`,`Hours Worked`]);
   shifts.forEach(s=>{
     const hrs=(s.duration_minutes/60).toFixed(2);
     rows.push([
@@ -754,7 +754,7 @@ function exportDetailCSV(){
   const shifts=getFilteredShifts();
   const from=document.getElementById('payFrom')?.value||'';
   const to=document.getElementById('payTo')?.value||'';
-  const rows=[['Guard Name','Employee ID','Site','Date','Clock In','Clock Out','Hours Worked']];
+  const rows=[['Employee Name','Employee ID','Site','Date','Clock In','Clock Out','Hours Worked']];
   shifts.forEach(s=>{
     const mins=s.duration_minutes||Math.round((new Date(s.clock_out)-new Date(s.clock_in))/60000);
     rows.push([s.guard_name||'',s.guard_id||'',s.site_name||'',fmtDate(new Date(s.clock_in)),fmtTime(new Date(s.clock_in)),fmtTime(new Date(s.clock_out)),(mins/60).toFixed(2)]);
