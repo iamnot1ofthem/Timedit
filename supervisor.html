@@ -872,7 +872,7 @@ async function loadSchedule(){
 function openAddShiftModal(){
   const guardSel=document.getElementById('schedGuardSelect');
   const siteSel=document.getElementById('schedSiteSelect');
-  guardSel.innerHTML=allGuards.filter(g=>g.role==='guard').map(g=>`<option value="${g.id}" data-name="${g.name||'Guard '+g.employee_id}">${g.name||'Guard '+g.employee_id}</option>`).join('');
+  guardSel.innerHTML=allGuards.filter(g=>g.role==='guard').map(g=>`<option value="${g.id}" data-name="${g.name||'Employee '+g.employee_id}">${g.name||'Employee '+g.employee_id}</option>`).join('');
   siteSel.innerHTML=allSites.map(s=>`<option value="${s.id}" data-name="${s.name}">${s.name}</option>`).join('');
   document.getElementById('schedDate').value=fmtISO(schedViewDate);
   document.getElementById('schedStart').value='';
