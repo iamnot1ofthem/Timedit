@@ -139,6 +139,9 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
 .toast.error { border-left: 3px solid var(--red); }
 .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-family: var(--mono); font-size: 11px; border: 1px dashed var(--border); border-radius: 12px; line-height: 1.8; }
 .live-ticker { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 1px; }
+@media (max-width: 767px) {
+  .table-wrap { overflow-x: auto; }
+}
 @media (min-width: 768px) {
   .tab-panel { padding: 24px 32px; max-width: 1100px; margin: 0 auto; width: 100%; }
   .stat-row { grid-template-columns: repeat(4, 1fr); }
@@ -394,8 +397,8 @@ body { background: var(--bg); color: var(--text); font-family: var(--syne); min-
 </div>
 
 <!-- Reset PIN Modal -->
-<div class="modal-overlay" id="resetModal">
-  <div class="modal">
+<div class="modal-overlay" id="resetModal" onclick="closeModal('resetModal')">
+  <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-title">Reset PIN</div>
     <div style="font-family:var(--mono);font-size:11px;color:var(--muted)" id="resetModalName">—</div>
     <div class="field"><label class="field-label">New PIN (4 digits)</label><input class="field-input" id="resetPinInput" type="tel" maxlength="4" inputmode="numeric" placeholder="Enter new PIN..." /></div>
@@ -436,8 +439,8 @@ async function hashPin(pin){const buf=await crypto.subtle.digest('SHA-256',new T
 
 const db={async query(table,method='GET',body=null,filter=''){const res=await fetch(`${SUPABASE_URL}/rest/v1/${table}${filter}`,{method,headers:{'apikey':SUPABASE_ANON,'Authorization':`Bearer ${SUPABASE_ANON}`,'Content-Type':'application/json','Prefer':method==='POST'?'return=representation':method==='PATCH'?'return=representation':''},body:body?JSON.stringify(body):null});if(!res.ok)throw new Error(await res.text());if(method==='DELETE')return null;const text=await res.text();return text?JSON.parse(text):null;}};
 
-let currentSup=JSON.parse(localStorage.getItem('td_sup')||'null');
-let currentCompany=JSON.parse(localStorage.getItem('td_sup_company')||'null');
+let currentSup;try{currentSup=JSON.parse(localStorage.getItem('td_sup')||'null');}catch(e){localStorage.removeItem('td_sup');currentSup=null;}
+let currentCompany;try{currentCompany=JSON.parse(localStorage.getItem('td_sup_company')||'null');}catch(e){localStorage.removeItem('td_sup_company');currentCompany=null;}
 let loginEmpId='',loginCompany=null,pinEntry='',regPin='',allShifts=[],allGuards=[],allSites=[],liveTimer=null,selectedGuardForReset=null;
 let schedViewDate=new Date();
 let companyTz='America/New_York';
@@ -613,6 +616,7 @@ function renderSummaryCards(shifts){
 function calcOvertimeFromShifts(shifts){
   const weeklyMins={};
   shifts.forEach(s=>{
+    if(!s.clock_in)return;
     const d=new Date(s.clock_in);
     const weekStart=new Date(d);weekStart.setDate(d.getDate()-d.getDay());weekStart.setHours(0,0,0,0);
     const key=weekStart.toISOString().split('T')[0];
@@ -665,15 +669,16 @@ function renderGuardSummary(shifts){
 function renderShiftsTable(shifts){
   const tbody=document.getElementById('shiftsTableBody');
   if(!shifts.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;font-family:var(--mono);font-size:11px">No completed shifts found</td></tr>';return;}
-  tbody.innerHTML=shifts.map(s=>{
-    const mins=s.duration_minutes||Math.round((new Date(s.clock_out)-new Date(s.clock_in))/60000);
-    const hrs=(mins/60).toFixed(2);
+  tbody.innerHTML=shifts.filter(s=>s.clock_in).map(s=>{
+    const mins=s.duration_minutes!=null?s.duration_minutes:(s.clock_out?Math.round((new Date(s.clock_out)-new Date(s.clock_in))/60000):null);
+    const hrs=mins!=null?(mins/60).toFixed(2):'—';
+    const clockOut=s.clock_out?fmtTime(new Date(s.clock_out)):'—';
     return`<tr>
       <td style="font-weight:700">${s.guard_name||'—'}</td>
       <td>${s.site_name||'—'}</td>
       <td>${fmtDate(new Date(s.clock_in))}</td>
       <td>${fmtTime(new Date(s.clock_in))}</td>
-      <td>${fmtTime(new Date(s.clock_out))}</td>
+      <td>${clockOut}</td>
       <td style="font-weight:700">${hrs} hrs</td>
       <td><span style="color:var(--muted);font-size:9px;letter-spacing:1px">COMPLETE</span></td>
     </tr>`;
@@ -691,6 +696,7 @@ function getFilteredShifts(){
 
 function exportPayrollCSV(){
   const shifts=getFilteredShifts();
+  if(!shifts.length){toast('⚠ No completed shifts found for this period','warn');return;}
   const from=document.getElementById('payFrom')?.value||'';
   const to=document.getElementById('payTo')?.value||'';
   const company=currentCompany.name;
@@ -728,14 +734,17 @@ function exportPayrollCSV(){
   rows.push([`--- SHIFT DETAIL ---`]);
   rows.push([`Employee Name`,`Employee ID`,`Site`,`Date`,`Clock In`,`Clock Out`,`Hours Worked`]);
   shifts.forEach(s=>{
-    const hrs=(s.duration_minutes/60).toFixed(2);
+    if(!s.clock_in)return;
+    const mins=s.duration_minutes!=null?s.duration_minutes:(s.clock_out?Math.round((new Date(s.clock_out)-new Date(s.clock_in))/60000):null);
+    const hrs=mins!=null?(mins/60).toFixed(2):'—';
+    const clockOut=s.clock_out?fmtTime(new Date(s.clock_out)):'—';
     rows.push([
       s.guard_name||'',
       s.guard_id||'',
       s.site_name||'',
       fmtDate(new Date(s.clock_in)),
       fmtTime(new Date(s.clock_in)),
-      fmtTime(new Date(s.clock_out)),
+      clockOut,
       hrs
     ]);
   });
@@ -756,8 +765,11 @@ function exportDetailCSV(){
   const to=document.getElementById('payTo')?.value||'';
   const rows=[['Employee Name','Employee ID','Site','Date','Clock In','Clock Out','Hours Worked']];
   shifts.forEach(s=>{
-    const mins=s.duration_minutes||Math.round((new Date(s.clock_out)-new Date(s.clock_in))/60000);
-    rows.push([s.guard_name||'',s.guard_id||'',s.site_name||'',fmtDate(new Date(s.clock_in)),fmtTime(new Date(s.clock_in)),fmtTime(new Date(s.clock_out)),(mins/60).toFixed(2)]);
+    if(!s.clock_in)return;
+    const mins=s.duration_minutes!=null?s.duration_minutes:(s.clock_out?Math.round((new Date(s.clock_out)-new Date(s.clock_in))/60000):null);
+    const hrs=mins!=null?(mins/60).toFixed(2):'—';
+    const clockOut=s.clock_out?fmtTime(new Date(s.clock_out)):'—';
+    rows.push([s.guard_name||'',s.guard_id||'',s.site_name||'',fmtDate(new Date(s.clock_in)),fmtTime(new Date(s.clock_in)),clockOut,hrs]);
   });
   const csv=rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
   const blob=new Blob([csv],{type:'text/csv'});
@@ -829,7 +841,7 @@ async function deleteSite(siteId,siteName){
 }
 function generateQR(id,siteName,label,type){const url=type==='zone'?`${window.location.origin}/guard?zone=${id}`:`${window.location.origin}/guard?site=${id}`;const win=window.open('','_blank');win.document.write(`<!DOCTYPE html><html><head><title>QR - ${siteName}${type==='zone'?' · '+label:''}</title><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script><style>body{font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:#fff;gap:16px;padding:32px}h1{font-size:24px;font-weight:800;margin:0}.zone-badge{background:#3B82F6;color:#fff;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:100px}.sub{font-size:12px;color:#666;letter-spacing:2px;text-transform:uppercase}.hint{font-size:11px;color:#999;text-align:center;max-width:220px;line-height:1.6}button{background:#3B82F6;color:#fff;border:none;padding:12px 24px;font-size:14px;font-weight:700;border-radius:8px;cursor:pointer;margin-top:8px}@media print{button{display:none}}</style></head><body><div style="font-size:28px;font-weight:800">Time<span style="color:#3B82F6">dit</span></div><div id="qr"></div><h1>${siteName}</h1>${type==='zone'?`<div class="zone-badge">${label}</div>`:`<div class="sub">${label}</div>`}<div class="hint">Scan to clock in or out at this location</div><button onclick="window.print()">🖨 Print</button><script>new QRCode(document.getElementById('qr'),{text:'${url}',width:220,height:220,colorDark:'#07090C',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});<\/script></body></html>`);}
 
-async function loadGuards(){try{const guards=await db.query('guards','GET',null,`?company=eq.${currentCompany.name}&order=name.asc`);allGuards=guards||[];const list=document.getElementById('guardsList');if(!allGuards.length){list.innerHTML='<div class="empty-state">No guards registered yet</div>';return;}list.innerHTML=allGuards.map(g=>`<div class="guard-row"><div><div class="guard-row-name">${g.name||'Guard '+g.employee_id}</div><div class="guard-row-meta">ID ${g.employee_id} · <span class="role-badge ${g.role||'guard'}">${g.role||'guard'}</span></div></div><div class="guard-row-actions"><button class="btn-sm" onclick="openResetPin('${g.id}','${g.name||'Guard '+g.employee_id}')">Reset PIN</button></div></div>`).join('');}catch(e){console.log('Guards load error',e);}}
+async function loadGuards(){try{const guards=await db.query('guards','GET',null,`?company=eq.${currentCompany.name}&order=name.asc`);allGuards=guards||[];const list=document.getElementById('guardsList');if(!allGuards.length){list.innerHTML='<div class="empty-state">No guards registered yet</div>';return;}list.innerHTML=allGuards.map(g=>`<div class="guard-row"><div><div class="guard-row-name">${g.name||'Guard '+g.employee_id}</div><div class="guard-row-meta">ID ${g.employee_id} · <span class="role-badge ${g.role||'guard'}">${g.role||'guard'}</span></div></div><div class="guard-row-actions"><button class="btn-sm" onclick="openResetPin('${g.id}','${(g.name||'Employee '+g.employee_id).replace(/'/g,"&#39;")}')">Reset PIN</button></div></div>`).join('');}catch(e){console.log('Guards load error',e);}}
 
 function openResetPin(guardId,guardName){selectedGuardForReset=guardId;document.getElementById('resetModalName').textContent=guardName;document.getElementById('resetPinInput').value='';document.getElementById('resetModal').classList.add('open');}
 async function confirmResetPin(){

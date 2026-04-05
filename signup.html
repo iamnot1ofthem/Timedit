@@ -168,7 +168,7 @@ nav{position:relative;z-index:10;padding:20px 40px;display:flex;align-items:cent
               <div class="plan-price">$79<span>/month</span></div>
               <div class="plan-desc">Up to 15 employees · 3 sites · All features</div>
             </div>
-            <div class="plan-option" id="planGrowth" onclick="selectPlan('growth')">
+            <div class="plan-option" id="planProfessional" onclick="selectPlan('professional')">
               <div class="plan-badge">POPULAR</div>
               <div class="plan-name">Professional</div>
               <div class="plan-price">$149<span>/month</span></div>
@@ -318,7 +318,7 @@ let signupCompany='';
 function selectPlan(plan){
   selectedPlan=plan;
   document.getElementById('planStarter').classList.toggle('selected',plan==='starter');
-  document.getElementById('planGrowth').classList.toggle('selected',plan==='growth');
+  document.getElementById('planProfessional').classList.toggle('selected',plan==='professional');
 }
 
 async function goStep2(){
