@@ -448,9 +448,6 @@ async function createAccount(){
     document.getElementById('successScreen').style.display='block';
 
   }catch(e){
-    console.error('[signup] createAccount FAILED');
-    console.error('[signup] error message:', e.message);
-    try{console.error('[signup] error parsed:', JSON.parse(e.message));}catch(_){console.error('[signup] raw error:', e.message);}
     let msg='⚠ Something went wrong — please try again';
     if(e.message&&e.message.includes('duplicate'))msg='⚠ Duplicate detected — please try a slightly different company name';
     else if(e.message&&e.message.includes('violates'))msg='⚠ Setup error — please refresh and try again';
